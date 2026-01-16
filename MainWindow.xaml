@@ -1,0 +1,63 @@
+﻿<Window x:Class="C2E4XML.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:C2E4XML"
+        mc:Ignorable="d"
+        Title="Convert" 
+        Height="450" Width="565" Icon="/とけちゃう猫さん.png">
+    <Grid>
+        <GroupBox Header="  ファイルパス"
+                  HorizontalAlignment="Left" VerticalAlignment="Top" 
+                  Height="110" Width="500" 
+                  Margin="25,15,0,0"
+                  Background="{DynamicResource ControlFillColorDefaultBrush}">
+            <StackPanel Orientation="Horizontal" Height="50" VerticalAlignment="Top">
+                <TextBox Text="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                         VerticalContentAlignment="Bottom"
+                         Height="30" Width="420" Margin="10,0,0,0" />
+                <Button Content="&#xE8A5;" 
+                        FontFamily="{StaticResource SymbolThemeFontFamily}"
+                        Height="40" Width="40" Margin="10,0,0,0"
+                        Cursor="Hand" HorizontalAlignment="Left" 
+                        Style="{DynamicResource AccentButtonStyle}" />
+            </StackPanel>
+        </GroupBox>
+        <Button Height="40" Width="130" Margin="25,130,0,0"
+                HorizontalAlignment="Left" VerticalAlignment="Top"
+                Cursor="Hand" 
+                Style="{DynamicResource AccentButtonStyle}" >
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="&#xEDAB;" 
+                           FontSize="20" FontFamily="{StaticResource SymbolThemeFontFamily}" 
+                           Margin="0,2,0,0" />
+                <TextBlock Text="変換" />
+            </StackPanel>
+        </Button>
+        <GroupBox Header="  結果" 
+                  HorizontalAlignment="Left" VerticalAlignment="Top"
+                  Height="215" Width="500" Margin="25,180,0,0" 
+                  Background="{DynamicResource ControlFillColorDefaultBrush}">
+            <StackPanel Orientation="Vertical" Height="200" VerticalAlignment="Top" Margin="10,0,0,0">
+                <Button Width="130" Height="40" 
+                        HorizontalAlignment="Left" 
+                        Cursor="Hand"
+                        Style="{DynamicResource AccentButtonStyle}" >
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE8C8;" 
+                                   FontSize="20" FontFamily="{StaticResource SymbolThemeFontFamily}" 
+                                   Margin="0,2,0,0"/>
+                        <TextBlock Text="変換ファイル" />
+                    </StackPanel>
+                </Button>
+                <TextBox Text="結果ログいろいろ" 
+                         Cursor="IBeam" 
+                         Margin="0,10,0,0" Height="100" Width="480"
+                         IsReadOnly="True"
+                         VerticalScrollBarVisibility="Visible" 
+                         HorizontalAlignment="Left"/>
+            </StackPanel>
+        </GroupBox>
+    </Grid>
+</Window>
