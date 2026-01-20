@@ -5,59 +5,74 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:C2E4XML"
         mc:Ignorable="d"
-        Title="Convert" 
-        Height="450" Width="565" Icon="/とけちゃう猫さん.png">
+        Title="Convert" Icon="/とけちゃう猫さん.png"
+        Height="450" Width="550" 
+        ResizeMode="CanMinimize" WindowStyle="SingleBorderWindow">
     <Grid>
-        <GroupBox Header="  ファイルパス"
-                  HorizontalAlignment="Left" VerticalAlignment="Top" 
+        <GroupBox x:Name="grpFilePath" Header="  ファイルパス"
+                  HorizontalAlignment="Center" VerticalAlignment="Top" 
                   Height="110" Width="500" 
-                  Margin="25,15,0,0"
+                  Margin="0,15,0,0"
                   Background="{DynamicResource ControlFillColorDefaultBrush}">
             <StackPanel Orientation="Horizontal" Height="50" VerticalAlignment="Top">
-                <TextBox Text="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                <TextBox x:Name="txtFilePath" Text="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
                          VerticalContentAlignment="Bottom"
                          Height="30" Width="420" Margin="10,0,0,0" />
-                <Button Content="&#xE8A5;" 
+                <Button x:Name="btnFilePath" Content="&#xE8A5;" 
                         FontFamily="{StaticResource SymbolThemeFontFamily}"
-                        Height="40" Width="40" Margin="10,0,0,0"
+                        Height="40" Width="50" Margin="5,0,0,0"
                         Cursor="Hand" HorizontalAlignment="Left" 
-                        Style="{DynamicResource AccentButtonStyle}" />
+                        Style="{DynamicResource AccentButtonStyle}" 
+                        ToolTip="ファイル設定"/>
             </StackPanel>
         </GroupBox>
-        <Button Height="40" Width="130" Margin="25,130,0,0"
-                HorizontalAlignment="Left" VerticalAlignment="Top"
+        <Button x:Name="btnConvert" Height="40" Width="50" Margin="25,135,0,0"
+                HorizontalAlignment="Center" VerticalAlignment="Top"
                 Cursor="Hand" 
-                Style="{DynamicResource AccentButtonStyle}" >
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="&#xEDAB;" 
-                           FontSize="20" FontFamily="{StaticResource SymbolThemeFontFamily}" 
-                           Margin="0,2,0,0" />
-                <TextBlock Text="変換" />
-            </StackPanel>
-        </Button>
-        <GroupBox Header="  結果" 
-                  HorizontalAlignment="Left" VerticalAlignment="Top"
-                  Height="215" Width="500" Margin="25,180,0,0" 
+                Style="{DynamicResource AccentButtonStyle}" 
+                Content="&#xEDAB;" 
+                FontSize="20" FontFamily="{StaticResource SymbolThemeFontFamily}" 
+                ToolTip="変換" />
+        <GroupBox x:Name="grpResult" Header="  結果" 
+                  HorizontalAlignment="Center" VerticalAlignment="Top"
+                  Height="215" Width="500" Margin="0,185,0,0" 
                   Background="{DynamicResource ControlFillColorDefaultBrush}">
-            <StackPanel Orientation="Vertical" Height="200" VerticalAlignment="Top" Margin="10,0,0,0">
-                <Button Width="130" Height="40" 
-                        HorizontalAlignment="Left" 
-                        Cursor="Hand"
-                        Style="{DynamicResource AccentButtonStyle}" >
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="&#xE8C8;" 
-                                   FontSize="20" FontFamily="{StaticResource SymbolThemeFontFamily}" 
-                                   Margin="0,2,0,0"/>
-                        <TextBlock Text="変換ファイル" />
-                    </StackPanel>
-                </Button>
-                <TextBox Text="結果ログいろいろ" 
+            <StackPanel Orientation="Vertical" Height="180" VerticalAlignment="Top" Margin="10,0,0,0">
+                <TextBox x:Name="txtResult" Text="結果ログいろいろ" 
                          Cursor="IBeam" 
-                         Margin="0,10,0,0" Height="100" Width="480"
+                         Margin="0,0,0,0" Height="100" Width="480"
                          IsReadOnly="True"
                          VerticalScrollBarVisibility="Visible" 
                          HorizontalAlignment="Left"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,10,0">
+                    <Button x:Name="btnExplorer" Width="50" Height="40"
+                            HorizontalAlignment="Left" 
+                            Cursor="Hand"
+                            Style="{DynamicResource AccentButtonStyle}"
+                            Content="&#xEC50;" 
+                            FontSize="20" FontFamily="{StaticResource SymbolThemeFontFamily}" 
+                            ToolTip="エクスプローラ"/>
+                    <Button x:Name="btnExcel" Width="50" Height="40"  Margin="5,0,5,0"
+                            HorizontalAlignment="Left" 
+                            Cursor="Hand"
+                            Style="{DynamicResource AccentButtonStyle}"
+                            Content="&#xECAA;"
+                            FontSize="20" FontFamily="{StaticResource SymbolThemeFontFamily}" 
+                            ToolTip="Excel"/>
+                    <Button x:Name="btnCopy" Width="50" Height="40" 
+                            HorizontalAlignment="Left" 
+                            Cursor="Hand"
+                            Style="{DynamicResource AccentButtonStyle}" 
+                            Content="&#xE8C8;" 
+                            FontSize="20" FontFamily="{StaticResource SymbolThemeFontFamily}" 
+                            ToolTip="パスコピー"/>
+                </StackPanel>
             </StackPanel>
         </GroupBox>
+        <ProgressBar x:Name="prgConvert"
+                     Height="4"
+                     Minimum="0" Maximum="100"
+                     Value="{Binding ProgressValue}"
+                     VerticalAlignment="Bottom" />
     </Grid>
 </Window>
