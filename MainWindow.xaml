@@ -9,66 +9,82 @@
         Height="450" Width="550" 
         ResizeMode="CanMinimize" WindowStyle="SingleBorderWindow">
     <Grid>
+        <!--ファイルパス設定-->
         <GroupBox x:Name="grpFilePath" Header="  ファイルパス"
                   HorizontalAlignment="Center" VerticalAlignment="Top" 
                   Height="110" Width="500" 
                   Margin="0,15,0,0"
                   Background="{DynamicResource ControlFillColorDefaultBrush}">
+            <!--テキストボックス・ボタン並び整理-->
             <StackPanel Orientation="Horizontal" Height="50" VerticalAlignment="Top">
+                <!--パス入力欄-->
                 <TextBox x:Name="txtFilePath" Text="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
                          VerticalContentAlignment="Bottom"
-                         Height="30" Width="420" Margin="10,0,0,0" />
+                         Height="30" Width="420" Margin="10,0,0,0" 
+                         AllowDrop="True"
+                         PreviewDragOver="TxtFilePath_PreviewDragOver" 
+                         PreviewDrop="TxtFilePath_PreviewDrop" />
+                <!--オープンファイルダイアログ表示-->
                 <Button x:Name="btnFilePath" Content="&#xE8A5;" 
                         FontFamily="{StaticResource SymbolThemeFontFamily}"
                         Height="40" Width="50" Margin="5,0,0,0"
                         Cursor="Hand" HorizontalAlignment="Left" 
                         Style="{DynamicResource AccentButtonStyle}" 
-                        ToolTip="ファイル設定"/>
+                        ToolTip="ファイル設定" Click="BtnFilePath_Click"/>
             </StackPanel>
         </GroupBox>
+        <!--変換ボタン-->
         <Button x:Name="btnConvert" Height="40" Width="50" Margin="25,135,0,0"
                 HorizontalAlignment="Center" VerticalAlignment="Top"
                 Cursor="Hand" 
                 Style="{DynamicResource AccentButtonStyle}" 
                 Content="&#xEDAB;" 
                 FontSize="20" FontFamily="{StaticResource SymbolThemeFontFamily}" 
-                ToolTip="変換" />
+                ToolTip="変換" Click="BtnConvert_Click" />
+        <!--結果-->
         <GroupBox x:Name="grpResult" Header="  結果" 
                   HorizontalAlignment="Center" VerticalAlignment="Top"
                   Height="215" Width="500" Margin="0,185,0,0" 
                   Background="{DynamicResource ControlFillColorDefaultBrush}">
+            <!--表示整頓用-->
             <StackPanel Orientation="Vertical" Height="180" VerticalAlignment="Top" Margin="10,0,0,0">
+                <!--結果ログ表示-->
                 <TextBox x:Name="txtResult" Text="結果ログいろいろ" 
                          Cursor="IBeam" 
                          Margin="0,0,0,0" Height="100" Width="480"
                          IsReadOnly="True"
                          VerticalScrollBarVisibility="Visible" 
                          HorizontalAlignment="Left"/>
+                <!--ボタン整頓用-->
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,10,0">
+                    <!--エクスプローラ表示-->
                     <Button x:Name="btnExplorer" Width="50" Height="40"
                             HorizontalAlignment="Left" 
                             Cursor="Hand"
                             Style="{DynamicResource AccentButtonStyle}"
                             Content="&#xEC50;" 
                             FontSize="20" FontFamily="{StaticResource SymbolThemeFontFamily}" 
-                            ToolTip="エクスプローラ"/>
+                            ToolTip="エクスプローラ" Click="BtnExplorer_Click"/>
+                    <!--エクセル起動-->
                     <Button x:Name="btnExcel" Width="50" Height="40"  Margin="5,0,5,0"
                             HorizontalAlignment="Left" 
                             Cursor="Hand"
                             Style="{DynamicResource AccentButtonStyle}"
                             Content="&#xECAA;"
                             FontSize="20" FontFamily="{StaticResource SymbolThemeFontFamily}" 
-                            ToolTip="Excel"/>
+                            ToolTip="Excel" Click="BtnExcel_Click"/>
+                    <!--パスコピー-->
                     <Button x:Name="btnCopy" Width="50" Height="40" 
                             HorizontalAlignment="Left" 
                             Cursor="Hand"
                             Style="{DynamicResource AccentButtonStyle}" 
                             Content="&#xE8C8;" 
                             FontSize="20" FontFamily="{StaticResource SymbolThemeFontFamily}" 
-                            ToolTip="パスコピー"/>
+                            ToolTip="パスコピー" Click="BtnCopy_Click"/>
                 </StackPanel>
             </StackPanel>
         </GroupBox>
+        <!--変換進捗バー-->
         <ProgressBar x:Name="prgConvert"
                      Height="4"
                      Minimum="0" Maximum="100"
