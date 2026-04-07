@@ -2,39 +2,43 @@
 
 namespace C2E4XML
 {
-
-    /// <summary>
-    /// 「シート名 → 複数の表」を Excel に書き込む。
-    /// 1 シートに複数の表を縦に並べて出力する。
-    /// </summary>
     internal class ExcelExporter
     {
-        public void Export(string filePath,
-            Dictionary<string, List<List<Dictionary<string, string>>>> sheets)
+        /// <summary>
+        /// XmlTableBuilder が生成した
+        /// 「シート名 → (タイトル, 表データ) のリスト」
+        /// を Excel に書き込む。
+        /// </summary>
+        public void Export(
+            string filePath,
+            Dictionary<string, List<(string Title, List<Dictionary<string, string>> Table)>> sheets)
         {
             using var wb = new XLWorkbook();
 
-            foreach (var (sheetName, tables) in sheets)
+            foreach (var (sheetName, tableList) in sheets)
             {
                 var ws = wb.Worksheets.Add(sheetName);
 
                 int rowIndex = 1;
 
-                foreach (var table in tables)
+                foreach (var (title, table) in tableList)
                 {
                     if (table.Count == 0)
                     {
-                        rowIndex++;
+                        rowIndex += 2;
                         continue;
                     }
 
-                    // 列名（キー）を収集
+                    // --- タイトル行（タグパス） ---
+                    ws.Cell(rowIndex, 1).Value = title;
+                    rowIndex++;
+
+                    // --- ヘッダー行 ---
                     var columns = table
                         .SelectMany(r => r.Keys)
                         .Distinct()
                         .ToList();
 
-                    // --- ヘッダー行 ---
                     for (int c = 0; c < columns.Count; c++)
                         ws.Cell(rowIndex, c + 1).Value = columns[c];
 
@@ -52,7 +56,7 @@ namespace C2E4XML
                         rowIndex++;
                     }
 
-                    // 表間に 2 行空ける
+                    // --- 表間に 2 行空ける ---
                     rowIndex += 2;
                 }
             }
