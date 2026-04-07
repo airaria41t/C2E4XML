@@ -4,25 +4,6 @@ using System.Xml;
 namespace C2E4XML
 {
     /// <summary>
-    /// ノード格納クラス
-    /// </summary>
-    internal class XmlDataNode
-    {
-        /// <summary>
-        /// 要素名
-        /// </summary>
-        public string Name { get; set; } = "";
-        /// <summary>
-        /// 値
-        /// </summary>
-        public string? Value { get; set; }
-        /// <summary>
-        /// 子ノード
-        /// </summary>
-        public List<XmlDataNode> Children { get; set; } = [];
-    }
-
-    /// <summary>
     /// XML読み込みクラス
     /// </summary>
     /// <param name="path">読み込みファイルのパス</param>
@@ -46,8 +27,10 @@ namespace C2E4XML
         {
             if (!File.Exists(Path))
                 throw new FileNotFoundException("XMLファイルが見つかりません。", Path);
+
             var doc = new XmlDocument();
             doc.Load(Path);
+
             Data = Convert(doc.DocumentElement!);
         }
 
@@ -66,7 +49,8 @@ namespace C2E4XML
             {
                 foreach (XmlAttribute attr in node.Attributes)
                 {
-                    rslt.Children.Add(new XmlDataNode { Name = $"@{attr.Name}", Value = attr.Value });
+                    rslt.Attributes[attr.Name] = attr.Value;
+                    //rslt.Children.Add(new XmlDataNode { Name = $"@{attr.Name}", Value = attr.Value });
                 }
             }
 
@@ -79,10 +63,12 @@ namespace C2E4XML
                         break;
 
                     case XmlNodeType.Text:
-                        rslt.Value = child.Value;
+                        rslt.Value = child.Value?.Trim();
+                        //rslt.Value = child.Value;
                         break;
 
                     case XmlNodeType.CDATA:
+                        rslt.Value = child.Value?.Trim();
                         break;
                 }
             }

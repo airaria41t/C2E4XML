@@ -96,8 +96,11 @@ namespace C2E4XML
                 }
 
                 // XML ロード
-                XmlLoader xml = new(path);
-                xml.LoadXml();
+                XmlLoader loader = new(path);
+                loader.LoadXml();
+
+                XmlTableBuilder builder = new(loader.ReadData);
+                var tables = builder.Build();
 
                 // Excel 出力先パス設定
                 string excelPath = System.IO.Path.ChangeExtension(path, ".xlsx");
@@ -118,8 +121,8 @@ namespace C2E4XML
                 }
 
                 // Excel 出力
-                ExcelExporter excel = new(xml.ReadData);
-                excel.Export(excelPath);
+                ExcelExporter excel = new();
+                excel.Export(excelPath, tables);
             }
             catch (Exception ex)
             {

@@ -2,50 +2,62 @@
 
 namespace C2E4XML
 {
-    internal class ExcelExporter(XmlDataNode data)
+
+    /// <summary>
+    /// 「シート名 → 複数の表」を Excel に書き込む。
+    /// 1 シートに複数の表を縦に並べて出力する。
+    /// </summary>
+    internal class ExcelExporter
     {
-        XmlDataNode Data { get; set; } = data;
-
-        public void Export(string filePath)
+        public void Export(string filePath,
+            Dictionary<string, List<List<Dictionary<string, string>>>> sheets)
         {
-            var flattener = new XmlFlattener();
-            var rows = flattener.Flatten(Data).ToList();
+            using var wb = new XLWorkbook();
 
-            using var workbook = new XLWorkbook();
-            var sheet = workbook.Worksheets.Add("XML");
-
-            WriteHeader(sheet, rows);
-            WriteBody(sheet, rows);
-
-            workbook.SaveAs(filePath);
-        }
-
-        private static void WriteHeader(IXLWorksheet sheet, IEnumerable<FlattenedRow> rows)
-        {
-            var maxDepth = rows.Max(r => r.Path.Count);
-
-            for (int i = 0; i < maxDepth; i++)
+            foreach (var (sheetName, tables) in sheets)
             {
-                sheet.Cell(1, i + 1).Value = $"Level{i + 1}";
-            }
+                var ws = wb.Worksheets.Add(sheetName);
 
-            sheet.Cell(1, maxDepth + 1).Value = "Value";
-        }
+                int rowIndex = 1;
 
-        private static void WriteBody(IXLWorksheet sheet, IEnumerable<FlattenedRow> rows)
-        {
-            int rowIndex = 2;
-
-            foreach (var row in rows)
-            {
-                for (int i = 0; i < row.Path.Count; i++)
+                foreach (var table in tables)
                 {
-                    sheet.Cell(rowIndex, i + 1).Value = row.Path[i];
-                }
+                    if (table.Count == 0)
+                    {
+                        rowIndex++;
+                        continue;
+                    }
 
-                sheet.Cell(rowIndex, row.Path.Count + 1).Value = row.Value;
-                rowIndex++;
+                    // 列名（キー）を収集
+                    var columns = table
+                        .SelectMany(r => r.Keys)
+                        .Distinct()
+                        .ToList();
+
+                    // --- ヘッダー行 ---
+                    for (int c = 0; c < columns.Count; c++)
+                        ws.Cell(rowIndex, c + 1).Value = columns[c];
+
+                    rowIndex++;
+
+                    // --- データ行 ---
+                    foreach (var row in table)
+                    {
+                        for (int c = 0; c < columns.Count; c++)
+                        {
+                            string col = columns[c];
+                            row.TryGetValue(col, out string? value);
+                            ws.Cell(rowIndex, c + 1).Value = value ?? "";
+                        }
+                        rowIndex++;
+                    }
+
+                    // 表間に 2 行空ける
+                    rowIndex += 2;
+                }
             }
+
+            wb.SaveAs(filePath);
         }
     }
 }
