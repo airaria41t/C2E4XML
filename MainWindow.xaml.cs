@@ -1,13 +1,6 @@
-﻿using System.Text;
+﻿using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace C2E4XML
 {
@@ -21,7 +14,7 @@ namespace C2E4XML
             InitializeComponent();
         }
 
-#region イベント
+        #region イベント
         /// <summary>
         /// オープンファイルダイアログ表示
         /// 変換ファイルパス取得
@@ -80,7 +73,7 @@ namespace C2E4XML
 
                 string path = files[0];
 
-                var tb = sender as TextBox;
+                if (sender is not TextBox tb) return;
                 tb.Text = path;
             }
             catch
@@ -94,9 +87,39 @@ namespace C2E4XML
         {
             try
             {
+                // ファイルパスの妥当性確認
                 string path = txtFilePath.Text;
-                XmlLoader cls = new(path);
-                cls.LoadXml();
+                if (string.IsNullOrEmpty(path) || !File.Exists(path))
+                {
+                    MessageBox.Show("有効なファイルパスを入力してください。", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                // XML ロード
+                XmlLoader xml = new(path);
+                xml.LoadXml();
+
+                // Excel 出力先パス設定
+                string excelPath = System.IO.Path.ChangeExtension(path, ".xlsx");
+                // 既に同名の Excel ファイルが存在する場合は上書き確認
+                if (File.Exists(excelPath))
+                {
+                    var result =
+                        MessageBox.Show(
+                            $"同名の Excel ファイルが既に存在します。\n上書きしますか？\n\n{excelPath}",
+                            "確認",
+                            MessageBoxButton.YesNo,
+                            MessageBoxImage.Question
+                            );
+                    if (result != MessageBoxResult.Yes)
+                    {
+                        return;
+                    }
+                }
+
+                // Excel 出力
+                ExcelExporter excel = new(xml.ReadData);
+                excel.Export(excelPath);
             }
             catch (Exception ex)
             {
@@ -119,7 +142,7 @@ namespace C2E4XML
 
         }
 
-#endregion
+        #endregion
 
     }
 }

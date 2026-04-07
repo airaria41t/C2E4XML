@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Linq;
-using ClosedXML.Excel;
+﻿using ClosedXML.Excel;
 
 namespace C2E4XML
 {
@@ -10,28 +6,46 @@ namespace C2E4XML
     {
         XmlDataNode Data { get; set; } = data;
 
-        public void ExportItemsToExcel(string excelPath, IEnumerable<dynamic> items)
+        public void Export(string filePath)
         {
+            var flattener = new XmlFlattener();
+            var rows = flattener.Flatten(Data).ToList();
+
             using var workbook = new XLWorkbook();
-            var ws = workbook.Worksheets.Add("Items");
+            var sheet = workbook.Worksheets.Add("XML");
 
-            // ヘッダー行
-            ws.Cell(1, 1).Value = "Id";
-            ws.Cell(1, 2).Value = "Name";
-            ws.Cell(1, 3).Value = "Value";
+            WriteHeader(sheet, rows);
+            WriteBody(sheet, rows);
 
-            int row = 2;
+            workbook.SaveAs(filePath);
+        }
 
-            foreach (var item in items)
+        private static void WriteHeader(IXLWorksheet sheet, IEnumerable<FlattenedRow> rows)
+        {
+            var maxDepth = rows.Max(r => r.Path.Count);
+
+            for (int i = 0; i < maxDepth; i++)
             {
-                ws.Cell(row, 1).Value = item.Id;
-                ws.Cell(row, 2).Value = item.Name;
-                ws.Cell(row, 3).Value = item.Value;
-                row++;
+                sheet.Cell(1, i + 1).Value = $"Level{i + 1}";
             }
 
-            ws.Columns().AdjustToContents();
-            workbook.SaveAs(excelPath);
+            sheet.Cell(1, maxDepth + 1).Value = "Value";
+        }
+
+        private static void WriteBody(IXLWorksheet sheet, IEnumerable<FlattenedRow> rows)
+        {
+            int rowIndex = 2;
+
+            foreach (var row in rows)
+            {
+                for (int i = 0; i < row.Path.Count; i++)
+                {
+                    sheet.Cell(rowIndex, i + 1).Value = row.Path[i];
+                }
+
+                sheet.Cell(rowIndex, row.Path.Count + 1).Value = row.Value;
+                rowIndex++;
+            }
         }
     }
 }

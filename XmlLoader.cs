@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Linq;
-using System.Xml.Linq;
+﻿using System.IO;
 using System.Xml;
 
 namespace C2E4XML
@@ -38,7 +33,9 @@ namespace C2E4XML
         /// </summary>
         public string Path { get; } = path;
 
-        XmlDataNode Data { get; set; } = new XmlDataNode();
+        private XmlDataNode Data { get; set; } = new XmlDataNode();
+
+        public XmlDataNode ReadData => Data;
 
         /// <summary>
         /// ファイルからXMLを読み込む関数
@@ -53,7 +50,7 @@ namespace C2E4XML
             doc.Load(Path);
             Data = Convert(doc.DocumentElement!);
         }
-        
+
         /// <summary>
         /// 指定された XML ノードおよびそのすべての子ノードを再帰的に変換し、対応する XmlDataNode オブジェクトを作成します。
         /// </summary>
@@ -63,13 +60,13 @@ namespace C2E4XML
         /// <returns>指定されたノードおよびその子ノードを表す XmlDataNode オブジェクト。</returns>
         private static XmlDataNode Convert(XmlNode node)
         {
-            var rslt = new XmlDataNode{Name = node.Name,};
+            var rslt = new XmlDataNode { Name = node.Name, };
 
             if (node.Attributes != null)
             {
                 foreach (XmlAttribute attr in node.Attributes)
                 {
-                    rslt.Children.Add(new XmlDataNode{Name = $"@{attr.Name}", Value = attr.Value});
+                    rslt.Children.Add(new XmlDataNode { Name = $"@{attr.Name}", Value = attr.Value });
                 }
             }
 
