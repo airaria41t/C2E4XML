@@ -141,6 +141,35 @@
                 return;
             }
 
+            // ★★★ Address のような「属性 + 複数の異名子ノード」を 1 行表にする分岐はここに入れる ★★★
+            if (node.Attributes.Count > 0 &&
+                children.Count > 1 &&
+                children.GroupBy(c => c.Name).All(g => g.Count() == 1))
+            {
+                string tablePath = path;
+                if (!_created.Contains(tablePath))
+                {
+                    var row = new Dictionary<string, string>();
+
+                    // 属性
+                    foreach (var attr in node.Attributes)
+                        row[$"@{attr.Key}"] = attr.Value;
+
+                    // 子ノード（値）を列にする
+                    foreach (var child in children)
+                    {
+                        // ★★★ CS8601 対策：ここで null を空文字に変換する ★★★
+                        var value = child.Value ?? string.Empty;
+                        row[child.Name] = value;
+                    }
+
+                    _created.Add(tablePath);
+                    result[tablePath] = new List<Dictionary<string, string>> { row };
+                }
+
+                return;
+            }
+
             // ✔ 子が 1 つだけ → 1 行表（unknown-tcp / unknown-udp / other-applications など）
             if (children.Count == 1)
             {
