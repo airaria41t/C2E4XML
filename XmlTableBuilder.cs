@@ -36,7 +36,15 @@
             var children = node.Children;
 
             // ✔ 属性・値・子がなくても表を出す（空表）
-            if (node.Attributes.Count == 0 && children.Count == 0)
+            //if (node.Attributes.Count == 0 && children.Count == 0)
+            //{
+            //    AddEmptyTable(path, result);
+            //    return;
+            //}
+            // ✔ 値が無い場合だけ空表を作る
+            if (node.Attributes.Count == 0 &&
+                children.Count == 0 &&
+                string.IsNullOrEmpty(node.Value))
             {
                 AddEmptyTable(path, result);
                 return;
@@ -158,10 +166,28 @@
                     // 子ノード（値）を列にする
                     foreach (var child in children)
                     {
-                        // ★★★ CS8601 対策：ここで null を空文字に変換する ★★★
+                        // ★★★ ここで null を空文字に変換する ★★★
                         var value = child.Value ?? string.Empty;
                         row[child.Name] = value;
                     }
+
+                    _created.Add(tablePath);
+                    result[tablePath] = new List<Dictionary<string, string>> { row };
+                }
+
+                return;
+            }
+
+            // ★★★ 値だけを持つ単純要素（DeliveryNotes など）を 1 行表にする分岐 ★★★
+            if (node.Attributes.Count == 0 &&
+                children.Count == 0 &&
+                !string.IsNullOrEmpty(node.Value))
+            {
+                string tablePath = path;
+                if (!_created.Contains(tablePath))
+                {
+                    var row = new Dictionary<string, string>();
+                    row[path.Split('.').Last()] = node.Value;   // 要素名を列名にする
 
                     _created.Add(tablePath);
                     result[tablePath] = new List<Dictionary<string, string>> { row };
