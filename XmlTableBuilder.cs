@@ -36,12 +36,15 @@
             var children = node.Children;
 
             // ✔ 属性・値・子がなくても表を出す（空表）
+            // ※ 下の条件と重複しているため不要
             //if (node.Attributes.Count == 0 && children.Count == 0)
             //{
             //    AddEmptyTable(path, result);
             //    return;
             //}
+
             // ✔ 値が無い場合だけ空表を作る
+            // ※ 上の条件と意味がほぼ同じなのでこちらだけ残す
             if (node.Attributes.Count == 0 &&
                 children.Count == 0 &&
                 string.IsNullOrEmpty(node.Value))
@@ -59,14 +62,15 @@
 
             // 子ノードの構造を調べる
             var sameNameGroups = children.GroupBy(c => c.Name).ToList();
-            bool hasSameNameGroup = sameNameGroups.Any(g => g.Count() > 1);
+            //bool hasSameNameGroup = sameNameGroups.Any(g => g.Count() > 1);
 
             // entry の兄弟まとめが可能なら structureGroups は無効化
-            if (hasSameNameGroup)
+            //if (hasSameNameGroup)
+            if (sameNameGroups.Any(g => g.Count() > 1))
             {
-
                 // ✔ 同じタグ名の兄弟（entry など）は 1 表にまとめる（行＝兄弟）
                 foreach (var g in sameNameGroups.Where(g => g.Count() > 1))
+                // ※ 下の条件は上と同じ意味なので不要
                 //foreach (var g in sameNameGroups.Where(g => g.Count() > 1 && g.Key == g.First().Name))
                 {
                     string tablePath = $"{path}.{g.Key}";
@@ -92,12 +96,14 @@
                     result[tablePath] = rows;
 
                     // その子ノード配下は表にしない（重複防止）
-                    return;   // ★★★ これが絶対に必要 ★★★
+                    //return;   // ★★★ これが絶対に必要 ★★★
+                    continue;
                 }
             }
 
             /*
             // ✔ flatten の列構造が同じ兄弟タグ（名前が異なる）を 1 表にまとめる（http）
+            // ※ 下でより条件を絞った structureGroups を定義しているため不要
             var structureGroups = children
                 .GroupBy(c => GetSignature(c))
                 .Where(g =>
@@ -121,11 +127,12 @@
                 )
                 .ToList();
 
-
-            if (hasSameNameGroup)
-            {
-                structureGroups.Clear();
-            }
+            //// ※ hasSameNameGroup が true のとき structureGroups は必ず無効化されるため
+            ////   この Clear() は実質的に重複処理
+            //if (hasSameNameGroup)
+            //{
+            //    //structureGroups.Clear(); // ← 無駄なのでコメントアウト
+            //}
 
             if (structureGroups.Count > 0)
             {
@@ -149,10 +156,16 @@
                 return;
             }
 
-            // ★★★ Address のような「属性 + 複数の異名子ノード」を 1 行表にする分岐はここに入れる ★★★
+            // ★★★ Address のような「属性 + 複数の異名子ノード」を 1 行表にする分岐 ★★★
+            //if (node.Attributes.Count > 0 &&
+            //    children.Count > 1 &&
+            //    children.GroupBy(c => c.Name).All(g => g.Count() == 1))
+            // ★★★ 修正版：属性 + 子複数 → 1 行表（customer を正しく処理する）★★★
+            //if (node.Attributes.Count > 0 &&
+            //    children.Count > 1)
             if (node.Attributes.Count > 0 &&
-                children.Count > 1 &&
-                children.GroupBy(c => c.Name).All(g => g.Count() == 1))
+    children.Count > 1 &&
+    children.All(c => c.Children.Count == 0))   // ★ 追加：子が葉ノードのときだけ
             {
                 string tablePath = path;
                 if (!_created.Contains(tablePath))
@@ -166,7 +179,6 @@
                     // 子ノード（値）を列にする
                     foreach (var child in children)
                     {
-                        // ★★★ ここで null を空文字に変換する ★★★
                         var value = child.Value ?? string.Empty;
                         row[child.Name] = value;
                     }
@@ -187,7 +199,7 @@
                 if (!_created.Contains(tablePath))
                 {
                     var row = new Dictionary<string, string>();
-                    row[path.Split('.').Last()] = node.Value;   // 要素名を列名にする
+                    row[path.Split('.').Last()] = node.Value;
 
                     _created.Add(tablePath);
                     result[tablePath] = new List<Dictionary<string, string>> { row };
@@ -196,7 +208,7 @@
                 return;
             }
 
-            // ✔ 子が 1 つだけ → 1 行表（unknown-tcp / unknown-udp / other-applications など）
+            // ✔ 子が 1 つだけ → 1 行表
             if (children.Count == 1)
             {
                 var only = children[0];
@@ -207,7 +219,12 @@
                     only.Children
                         .GroupBy(c => c.Name)
                         .Any(g => g.Count() > 1);
-
+                // ★★★ 既存判定が false のときだけ deeper を探索する ★★★
+                if (!onlyHasSameNameGrandChildren)
+                {
+                    if (HasSameNameDescendants(only))
+                        onlyHasSameNameGrandChildren = true;
+                }
                 if (!onlyHasSameNameGrandChildren)
                 {
                     string tablePath = $"{path}.{only.Name}";
@@ -220,7 +237,6 @@
                         result[tablePath] = new List<Dictionary<string, string>> { row };
                     }
 
-                    // その子ノード配下は表にしない（重複防止）
                     return;
                 }
             }
@@ -274,6 +290,25 @@
                 .OrderBy(s => s);
 
             return $"{string.Join(",", attrNames)}|{string.Join(",", childSigs)}";
+        }
+
+        private bool HasSameNameDescendants(XmlDataNode node)
+        {
+            // 子孫に同名兄弟がいるか？
+            foreach (var child in node.Children)
+            {
+                // 直下に同名兄弟
+                if (child.Children
+                        .GroupBy(c => c.Name)
+                        .Any(g => g.Count() > 1))
+                    return true;
+
+                // さらに深い階層を探索
+                if (HasSameNameDescendants(child))
+                    return true;
+            }
+
+            return false;
         }
 
 
