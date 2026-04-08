@@ -121,8 +121,8 @@ namespace C2E4XML
                 }
 
                 // Excel 出力
-                ExcelExporter excel = new();
-                excel.Export(excelPath, tables);
+                ExcelExporter excel = new(tables);
+                excel.Export(excelPath);
             }
             catch (Exception ex)
             {

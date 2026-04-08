@@ -1,67 +1,98 @@
 ﻿using ClosedXML.Excel;
 
-namespace C2E4XML
+internal class ExcelExporter
 {
-    internal class ExcelExporter
+    private readonly Dictionary<string, List<Dictionary<string, string>>> _tables;
+
+    public ExcelExporter(Dictionary<string, List<Dictionary<string, string>>> tables)
     {
-        /// <summary>
-        /// XmlTableBuilder が生成した
-        /// 「シート名 → (タイトル, 表データ) のリスト」
-        /// を Excel に書き込む。
-        /// </summary>
-        public void Export(
-            string filePath,
-            Dictionary<string, List<(string Title, List<Dictionary<string, string>> Table)>> sheets)
+        _tables = tables;
+    }
+
+    public void Export(string filePath)
+    {
+        using var workbook = new XLWorkbook();
+
+        // 1. シート名（ルート直下タグ）ごとにグルーピング
+        var groups = _tables.GroupBy(kv => GetSheetKey(kv.Key));
+
+        foreach (var group in groups)
         {
-            using var wb = new XLWorkbook();
+            string sheetName = SanitizeSheetName(group.Key);
+            var sheet = workbook.Worksheets.Add(sheetName);
 
-            foreach (var (sheetName, tableList) in sheets)
+            int currentRow = 1;
+
+            // 2. 同じシートに属する表を順に書き込む
+            foreach (var kv in group.OrderBy(g => g.Key))
             {
-                var ws = wb.Worksheets.Add(sheetName);
+                string fullPath = kv.Key;
+                var rows = kv.Value;
 
-                int rowIndex = 1;
+                // 表タイトル行（フルパス）
+                sheet.Cell(currentRow, 1).Value = fullPath;
+                currentRow++;
 
-                foreach (var (title, table) in tableList)
+                if (rows.Count > 0)
                 {
-                    if (table.Count == 0)
+                    var header = rows[0].Keys.ToList();
+
+                    // ヘッダ行
+                    for (int col = 0; col < header.Count; col++)
+                        sheet.Cell(currentRow, col + 1).Value = header[col];
+
+                    currentRow++;
+
+                    // データ行
+                    for (int r = 0; r < rows.Count; r++)
                     {
-                        rowIndex += 2;
-                        continue;
-                    }
-
-                    // --- タイトル行（タグパス） ---
-                    ws.Cell(rowIndex, 1).Value = title;
-                    rowIndex++;
-
-                    // --- ヘッダー行 ---
-                    var columns = table
-                        .SelectMany(r => r.Keys)
-                        .Distinct()
-                        .ToList();
-
-                    for (int c = 0; c < columns.Count; c++)
-                        ws.Cell(rowIndex, c + 1).Value = columns[c];
-
-                    rowIndex++;
-
-                    // --- データ行 ---
-                    foreach (var row in table)
-                    {
-                        for (int c = 0; c < columns.Count; c++)
+                        var data = rows[r];
+                        for (int c = 0; c < header.Count; c++)
                         {
-                            string col = columns[c];
-                            row.TryGetValue(col, out string? value);
-                            ws.Cell(rowIndex, c + 1).Value = value ?? "";
+                            string key = header[c];
+                            data.TryGetValue(key, out string? value);
+                            sheet.Cell(currentRow, c + 1).Value = value ?? "";
                         }
-                        rowIndex++;
+                        currentRow++;
                     }
-
-                    // --- 表間に 2 行空ける ---
-                    rowIndex += 2;
                 }
+
+                // 表と表の間に 1 行空ける
+                currentRow++;
             }
 
-            wb.SaveAs(filePath);
+            sheet.Columns().AdjustToContents();
         }
+
+        workbook.SaveAs(filePath);
+    }
+
+    // ルート直下のタグ名をシート名にする
+    private static string GetSheetKey(string path)
+    {
+        var parts = path.Split('.');
+
+        // 例:
+        // "config"                               → "config"
+        // "config.devices.entry.network"         → "devices"
+        // "config.shared.botnet.configuration"   → "shared"
+        // "config.mgt-config.users.entry"        → "mgt-config"
+
+        if (parts.Length == 1)
+            return parts[0];
+
+        return parts[0];
+    }
+
+    private static string SanitizeSheetName(string name)
+    {
+        var invalid = new[] { ':', '\\', '/', '?', '*', '[', ']' };
+        foreach (var c in invalid)
+            name = name.Replace(c.ToString(), "");
+
+        if (name.Length > 31)
+            name = name[..31];
+
+        return name;
     }
 }

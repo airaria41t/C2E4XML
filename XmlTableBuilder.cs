@@ -1,80 +1,243 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace C2E4XML
+﻿namespace C2E4XML
 {
-    internal class XmlTableBuilder(XmlDataNode root)
+    internal class XmlTableBuilder
     {
-        private readonly XmlDataNode _root = root;
+        private readonly XmlDataNode _root;
+        private readonly HashSet<string> _created = new HashSet<string>();
 
-        public Dictionary<string, List<(string Title, List<Dictionary<string, string>> Table)>> Build()
+        public XmlTableBuilder(XmlDataNode root)
         {
-            var result = new Dictionary<string, List<(string, List<Dictionary<string, string>>)>>();
+            _root = root;
+        }
 
-            // ルート直下のタグごとにシートを作成
+        public Dictionary<string, List<Dictionary<string, string>>> Build()
+        {
+            var result = new Dictionary<string, List<Dictionary<string, string>>>();
+
+            // ✔ config も必ず出力される（属性のみの 1 行表）
+            //AddAttributeTable("config", _root, result);
+            AddAttributeTable(_root.Name, _root, result);
+
+            // ✔ シートは「ルート直下のタグ」 → ここでは path の先頭要素になる
             foreach (var child in _root.Children)
             {
-                var tables = new List<(string, List<Dictionary<string, string>>)>();
-                BuildSheet(child, tables, child.Name);
-                result[child.Name] = tables;
+                BuildNode(child, $"{child.Name}", result);
             }
 
             return result;
         }
 
-        /// <summary>
-        /// シート単位で表を構築する
-        /// </summary>
-        private void BuildSheet(XmlDataNode node,
-            List<(string Title, List<Dictionary<string, string>> Table)> tables,
-            string path)
+        private void BuildNode(XmlDataNode node, string path,
+            Dictionary<string, List<Dictionary<string, string>>> result)
         {
-            // --- 子タグを種類ごとにグループ化 ---
-            var groups = node.Children.GroupBy(c => c.Name);
+            if (_created.Contains(path))
+                return;
 
-            foreach (var g in groups)
+            var children = node.Children;
+
+            // ✔ 属性・値・子がなくても表を出す（空表）
+            if (node.Attributes.Count == 0 && children.Count == 0)
             {
-                string tagName = g.Key;
-                string fullPath = $"{path}.{tagName}"; // ★ タグパス（例：http.entry）
+                AddEmptyTable(path, result);
+                return;
+            }
 
-                // --- 同名タグは 1 表にまとめる ---
-                var table = new List<Dictionary<string, string>>();
+            // ✔ 属性だけ → 1 行表
+            if (node.Attributes.Count > 0 && children.Count == 0)
+            {
+                AddAttributeTable(path, node, result);
+                return;
+            }
 
-                foreach (var elem in g)
-                    table.Add(Flatten(elem));
+            // 子ノードの構造を調べる
+            var sameNameGroups = children.GroupBy(c => c.Name).ToList();
+            bool hasSameNameGroup = sameNameGroups.Any(g => g.Count() > 1);
 
-                tables.Add((fullPath, table));
+            // entry の兄弟まとめが可能なら structureGroups は無効化
+            if (hasSameNameGroup)
+            {
 
-                // --- 子ノードのシートは別シートで処理するため、ここでは再帰しない ---
+                // ✔ 同じタグ名の兄弟（entry など）は 1 表にまとめる（行＝兄弟）
+                foreach (var g in sameNameGroups.Where(g => g.Count() > 1))
+                //foreach (var g in sameNameGroups.Where(g => g.Count() > 1 && g.Key == g.First().Name))
+                {
+                    string tablePath = $"{path}.{g.Key}";
+                    if (_created.Contains(tablePath)) continue;
+
+                    var rows = new List<Dictionary<string, string>>();
+                    foreach (var n in g)
+                    {
+                        var row = new Dictionary<string, string>();
+
+                        // 属性
+                        foreach (var attr in n.Attributes)
+                            row[$"@{attr.Key}"] = attr.Value;
+
+                        // 値と子ノードは flatten（ただし entry の子は flatten しない）
+                        foreach (var child in n.Children)
+                            Flatten(child, child.Name, row);
+
+                        rows.Add(row);
+                    }
+
+                    _created.Add(tablePath);
+                    result[tablePath] = rows;
+
+                    // その子ノード配下は表にしない（重複防止）
+                    return;   // ★★★ これが絶対に必要 ★★★
+                }
+            }
+
+            /*
+            // ✔ flatten の列構造が同じ兄弟タグ（名前が異なる）を 1 表にまとめる（http）
+            var structureGroups = children
+                .GroupBy(c => GetSignature(c))
+                .Where(g =>
+                    g.Count() > 1 &&
+                    g.Select(x => x.Name).Distinct().Count() > 1 &&   // 名前が違う
+                    g.All(x => x.Children.Count > 0)                  // flatten 可能
+                )
+                .ToList();
+            */
+
+            // structureGroups は「名前が異なる兄弟」ではなく
+            // 「同じ親の子の中で構造が似ているもの」だけに限定する
+            var structureGroups = children
+                .GroupBy(c => GetSignature(c))
+                .Where(g =>
+                    g.Count() > 1 &&
+                    g.Select(x => x.Name).Distinct().Count() > 1 &&
+                    g.All(x => x.Children.Count > 0) &&
+                    // ★ 追加：entry の兄弟まとめが可能なら structureGroups を無効化
+                    !sameNameGroups.Any(sg => sg.Count() > 1)
+                )
+                .ToList();
+
+
+            if (hasSameNameGroup)
+            {
+                structureGroups.Clear();
+            }
+
+            if (structureGroups.Count > 0)
+            {
+                // このノード自身が表の単位になる
+                if (!_created.Contains(path))
+                {
+                    var rows = new List<Dictionary<string, string>>();
+                    foreach (var s in children)
+                    {
+                        var row = new Dictionary<string, string>();
+                        row["type"] = s.Name; // ✔ type 列は先頭
+                        Flatten(s, "", row);
+                        rows.Add(row);
+                    }
+
+                    _created.Add(path);
+                    result[path] = rows;
+                }
+
+                // 子ノード配下は表にしない（重複防止）
+                return;
+            }
+
+            // ✔ 子が 1 つだけ → 1 行表（unknown-tcp / unknown-udp / other-applications など）
+            if (children.Count == 1)
+            {
+                var only = children[0];
+
+                // ★ その子の直下に「同名の兄弟」が複数あるなら、
+                //    ここで 1 行表にせず、後続のロジック（兄弟まとめ）に任せる
+                bool onlyHasSameNameGrandChildren =
+                    only.Children
+                        .GroupBy(c => c.Name)
+                        .Any(g => g.Count() > 1);
+
+                if (!onlyHasSameNameGrandChildren)
+                {
+                    string tablePath = $"{path}.{only.Name}";
+                    if (!_created.Contains(tablePath))
+                    {
+                        var row = new Dictionary<string, string>();
+                        Flatten(only, "", row);
+
+                        _created.Add(tablePath);
+                        result[tablePath] = new List<Dictionary<string, string>> { row };
+                    }
+
+                    // その子ノード配下は表にしない（重複防止）
+                    return;
+                }
+            }
+
+            // ここまでで表にならなかったノードは、さらに下の階層を探索
+            foreach (var child in children)
+            {
+                BuildNode(child, $"{path}.{child.Name}", result);
             }
         }
 
-        /// <summary>
-        /// ノード以下の値をフラット化して Dictionary にする。
-        /// ・属性は @属性名
-        /// ・子要素は階層無視して展開
-        /// </summary>
-        private Dictionary<string, string> Flatten(XmlDataNode node)
+        private void AddEmptyTable(string path,
+            Dictionary<string, List<Dictionary<string, string>>> result)
         {
-            var dict = new Dictionary<string, string>();
+            if (_created.Add(path))
+                result[path] = new List<Dictionary<string, string>>();
+        }
 
-            // 属性
+        private void AddAttributeTable(string path, XmlDataNode node,
+            Dictionary<string, List<Dictionary<string, string>>> result)
+        {
+            if (!_created.Add(path)) return;
+
+            var row = new Dictionary<string, string>();
             foreach (var attr in node.Attributes)
-                dict[$"@{attr.Key}"] = attr.Value;
+                row[$"@{attr.Key}"] = attr.Value;
 
-            // 値
-            if (node.Value != null)
-                dict[node.Name] = node.Value;
+            result[path] = new List<Dictionary<string, string>> { row };
+        }
 
-            // 子要素
-            foreach (var child in node.Children)
+        /*private string GetSignature(XmlDataNode node)
+        {
+            var childNames = node.Children.Select(c => c.Name).OrderBy(n => n);
+            var attrNames = node.Attributes.Keys.OrderBy(n => n);
+            return string.Join(",", childNames) + "|" + string.Join(",", attrNames);
+        }*/
+
+        private string GetSignature(XmlDataNode node)
+        {
+            // 自身の属性名
+            var attrNames = node.Attributes.Keys
+                .OrderBy(n => n);
+
+            // 子ノードの構造を含めた signature
+            var childSigs = node.Children
+                .Select(c =>
+                    $"{c.Name}:" +
+                    $"{string.Join(",", c.Attributes.Keys.OrderBy(a => a))}:" +
+                    $"{c.Children.Count}"
+                )
+                .OrderBy(s => s);
+
+            return $"{string.Join(",", attrNames)}|{string.Join(",", childSigs)}";
+        }
+
+
+        private void Flatten(XmlDataNode node, string prefix, Dictionary<string, string> row)
+        {
+            if (!string.IsNullOrEmpty(node.Value))
             {
-                foreach (var kv in Flatten(child))
-                    dict[kv.Key] = kv.Value;
+                string col = prefix.Trim('.');
+                row[col] = node.Value;
             }
 
-            return dict;
+            foreach (var child in node.Children)
+            {
+                string nextPrefix = string.IsNullOrEmpty(prefix)
+                    ? child.Name
+                    : $"{prefix}.{child.Name}";
+
+                Flatten(child, nextPrefix, row);
+            }
         }
     }
 }
