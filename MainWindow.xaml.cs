@@ -109,13 +109,6 @@ namespace C2E4XML
                     return;
                 }
 
-                // XML ロード
-                XmlLoader loader = new(path);
-                loader.LoadXml();
-
-                XmlTableBuilder builder = new(loader.ReadData);
-                var tables = builder.Build();
-
                 // Excel 出力先パス設定
                 string excelPath = System.IO.Path.ChangeExtension(path, ".xlsx");
                 // 既に同名の Excel ファイルが存在する場合は上書き確認
@@ -134,9 +127,26 @@ namespace C2E4XML
                     }
                 }
 
-                // Excel 出力
-                ExcelExporter excel = new(tables);
-                excel.Export(excelPath);
+                // XML ロード
+                XmlLoader loader = new(path);
+                loader.LoadXml();
+
+                bool bDetail = tglDetailOut.IsChecked == true;
+                if (bDetail)
+                {
+                    // テーブル構築
+                    XmlTableBuilder builder = new(loader.ReadData);
+                    var tables = builder.Build();
+
+                    // Excel 出力
+                    //ExcelExporter excel = new(tables);
+                    ExcelExporter excel = new();
+                    excel.Export(excelPath, tables);
+                } else {
+                    // Excel 出力
+                    ExcelExporter excel = new();
+                    excel.Export(excelPath, loader.ReadData);
+                }
             }
             catch (Exception ex)
             {

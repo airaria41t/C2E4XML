@@ -4,19 +4,19 @@ namespace C2E4XML
 {
     internal class ExcelExporter
     {
-        private readonly Dictionary<string, List<Dictionary<string, string>>> _tables;
+        //private readonly Dictionary<string, List<Dictionary<string, string>>> _tables;
 
-        public ExcelExporter(Dictionary<string, List<Dictionary<string, string>>> tables)
-        {
-            _tables = tables;
-        }
+        //public ExcelExporter( tables)
+        //{
+        //    _tables = tables;
+        //}
 
-        public void Export(string filePath)
+        public void Export(string filePath, Dictionary<string, List<Dictionary<string, string>>> tables)
         {
             using var workbook = new XLWorkbook();
 
             // 1. シート名（ルート直下タグ）ごとにグルーピング
-            var groups = _tables.GroupBy(kv => GetSheetKey(kv.Key));
+            var groups = tables.GroupBy(kv => GetSheetKey(kv.Key));
 
             foreach (var group in groups)
             {
@@ -116,6 +116,53 @@ namespace C2E4XML
                 name = name[..31];
 
             return name;
+        }
+
+        public void Export(string filePath,XmlDataNode data)
+        {
+            var flattener = new XmlFlattener();
+            var rows = flattener.Flatten(data).ToList();
+
+            using var workbook = new XLWorkbook();
+            var sheet = workbook.Worksheets.Add("XML");
+
+            WriteHeader(sheet, rows);
+            WriteBody(sheet, rows);
+
+            workbook.SaveAs(filePath);
+        }
+
+        private static void WriteHeader(IXLWorksheet sheet, IEnumerable<FlattenedRow> rows)
+        {
+            var maxDepth = rows.Max(r => r.Path.Count);
+
+            for (int i = 0; i <= maxDepth; i++)
+            {
+                sheet.Cell(1, i + 1).Value = $"Level{i + 1}";
+                // 背景色（薄いグレー／濃いグレー）
+                sheet.Cell(1, i + 1).Style.Fill.BackgroundColor =
+                    (i % 2 == 0) ? XLColor.Gray : XLColor.DarkGray;
+            }
+
+            //sheet.Cell(1, maxDepth + 1).Value = $"Level{maxDepth + 1}"; ;
+        }
+
+        private static void WriteBody(IXLWorksheet sheet, IEnumerable<FlattenedRow> rows)
+        {
+            int rowIndex = 2;
+
+            foreach (var row in rows)
+            {
+                for (int i = 0; i < row.Path.Count; i++)
+                {
+                    sheet.Cell(rowIndex, i + 1).Value = row.Path[i];
+                }
+
+                sheet.Cell(rowIndex, row.Path.Count + 1).Value = row.Value;
+                sheet.Cell(rowIndex, row.Path.Count + 1).Style.Font.Bold = true;
+                sheet.Cell(rowIndex, row.Path.Count + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
+                rowIndex++;
+            }
         }
     }
 }
