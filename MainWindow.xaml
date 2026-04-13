@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="Convert" Icon="/とけちゃう猫さん.png"
         Height="450" Width="550" 
-        ResizeMode="CanMinimize" WindowStyle="SingleBorderWindow">
+        ResizeMode="CanMinimize" WindowStyle="SingleBorderWindow" Loaded="MainWindow_Loaded">
     <Grid>
         <!--ファイルパス設定-->
         <GroupBox x:Name="grpFilePath" Header="  ファイルパス"
@@ -33,14 +33,44 @@
                         ToolTip="ファイル設定" Click="BtnFilePath_Click"/>
             </StackPanel>
         </GroupBox>
-        <!--変換ボタン-->
-        <Button x:Name="btnConvert" Height="40" Width="50" Margin="25,135,0,0"
-                HorizontalAlignment="Center" VerticalAlignment="Top"
+        <StackPanel Orientation="Horizontal" Height="50" VerticalAlignment="Top" Margin="0,130">
+            <!--トグル説明-->
+            <TextBlock Text="詳細"
+               VerticalAlignment="Center"
+               Margin="100,0,0,0"
+               FontSize="15"/>
+            <!--トグル設定-->
+            <ToggleButton x:Name="tglDetailOut" 
+                          Width="57" Height="26" Margin="5,0,0,0" 
+                          HorizontalAlignment="Left" VerticalAlignment="Center" 
+                          IsChecked="True">
+                <ToggleButton.Template>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Grid>
+                            <Border x:Name="SwitchBorder" CornerRadius="11" Background="LightGray"/>
+                            <Ellipse x:Name="Knob" Width="20" Height="20" Margin="3" Fill="White" 
+                                     HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="SwitchBorder" Property="Background"
+                                        Value="{x:Static SystemColors.HighlightBrush}" />
+                                <Setter TargetName="Knob" Property="HorizontalAlignment" Value="Right" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </ToggleButton.Template>
+            </ToggleButton>
+            <!--変換ボタン-->
+            <Button x:Name="btnConvert" Height="40" Width="50" Margin="100,0,0,0"
+                HorizontalAlignment="Left" VerticalAlignment="Center"
                 Cursor="Hand" 
                 Style="{DynamicResource AccentButtonStyle}" 
                 Content="&#xEDAB;" 
                 FontSize="20" FontFamily="{StaticResource SymbolThemeFontFamily}" 
                 ToolTip="変換" Click="BtnConvert_Click" />
+
+        </StackPanel>
         <!--結果-->
         <GroupBox x:Name="grpResult" Header="  結果" 
                   HorizontalAlignment="Center" VerticalAlignment="Top"

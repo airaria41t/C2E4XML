@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Navigation;
 
 namespace C2E4XML
 {
@@ -12,6 +13,19 @@ namespace C2E4XML
         public MainWindow()
         {
             InitializeComponent();
+            Loaded += MainWindow_Loaded;
+        }
+
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            InitializeForm();
+            //throw new NotImplementedException();
+        }
+
+        private void InitializeForm()
+        {
+            txtFilePath.Text = "ファイルパスを入力";
+            txtResult.Text = "結果が表示されます。";
         }
 
         #region イベント
@@ -25,8 +39,8 @@ namespace C2E4XML
         {
             var dialog = new Microsoft.Win32.OpenFileDialog
             {
-                Title = "ファイルを選択",
-                Filter = "すべてのファイル (*.*)|*.*"
+                Title = "XML ファイルを選択",
+                Filter = "XML ファイル (*.xml;*.XML)|*.xml;*.XML|すべてのファイル (*.*)|*.*"
             };
 
             if (dialog.ShowDialog() == true)
