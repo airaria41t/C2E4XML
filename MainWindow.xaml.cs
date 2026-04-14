@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Navigation;
+using System.Windows.Threading;
 
 namespace C2E4XML
 {
@@ -13,7 +14,9 @@ namespace C2E4XML
     /// </summary>
     public partial class MainWindow : Window
     {
-        
+        private readonly object _procLock = new object();
+        private bool _isProcessing = false;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -31,18 +34,28 @@ namespace C2E4XML
         {
             txtFilePath.Text = "ファイルパスを入力";
             txtLog.Text = "結果が表示されます。";
-            //txtStatus.Text = "";
-            //txtResultMark.Text = "";
-            //stkProgressBar.Visibility = Visibility.Hidden;
+            txtStatus.Text = "";
+            txtResultMark.Text = "";
+            txtResultMarkB.Text = "";
+            stkProgressBar.Visibility = Visibility.Hidden;
         }
 
-        private void InitializeProgressBar()
+        private void InitializeProgressBar(bool flag)
         {
-            stkProgressBar.Visibility = Visibility.Visible;
-            prgConvert.Minimum = 0;
-            prgConvert.Maximum = 100;
-            prgConvert.Value = 0;
+            if (flag)
+            {
+                stkProgressBar.Visibility = Visibility.Visible;
+                prgConvert.Minimum = 0;
+                prgConvert.Maximum = 100;
+                prgConvert.Value = 0;
+            }
+            else
+            {
+                stkProgressBar.Visibility = Visibility.Hidden;
+            }
             txtStatus.Text = "";
+            txtResultMark.Text = "";
+            txtResultMarkB.Text = "";
         }
 
         #region イベント
@@ -144,7 +157,7 @@ namespace C2E4XML
                 //}
 
                 // ProgressBar 初期化
-                InitializeProgressBar();
+                InitializeProgressBar(true);
 
                 // キャンセル用
                 _cts = new CancellationTokenSource();
@@ -155,9 +168,9 @@ namespace C2E4XML
 
                 bool bDetail = tglDetailOut.IsChecked == true;
 
-                await Task.Run(() =>
+                await Task.Run(async () =>
                 {
-                    using var _ = ConvertXmlToExcel(path, bDetail, progress, status, token);
+                    await ConvertXmlToExcel(path, bDetail, progress, status, token);
                 }, token);
 
                 MessageBox.Show("Excel 出力が完了しました。", "完了", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -200,20 +213,75 @@ namespace C2E4XML
 
         private async void BtnConvert_Click(object sender, RoutedEventArgs e)
         {
-            bool success = await ProcExecution();
-            if (success)
+            try
             {
-                // 成功時の処理（必要に応じて追加）
-                txtResultMark.Text = "✔";
-                txtResultMark.Foreground = new SolidColorBrush(Colors.SeaGreen);
+                btnConvert.FontFamily = new FontFamily("Segoe Fluent Icons");
+                btnConvert.Content = "\uEE95";   // StopSolid
+                lock (_procLock)
+                {
+                    if (_isProcessing)
+                    {
+                        // 既に処理中の場合はキャンセルを試みる
+                        _cts?.Cancel();
+                        return;
+                    }
+                    _isProcessing = true;
+                }
+
+                bool success = await ProcExecution();
+
+                if (success)
+                {
+                    // 成功時の処理（必要に応じて追加）
+                    txtStatus.Text = "変換成功";
+                    txtResultMark.Text = "✔";
+                    txtResultMark.Foreground = new SolidColorBrush(Colors.SeaGreen);
+                    txtResultMarkB.Text = "✔";
+                    txtResultMarkB.Foreground = new SolidColorBrush(Colors.SeaGreen);
+                }
+                else
+                {
+                    // 失敗時の処理（必要に応じて追加）
+                    txtStatus.Text = "変換失敗";
+                    txtResultMark.Text = "✖";
+                    txtResultMark.Foreground = new SolidColorBrush(Colors.Crimson);
+                    txtResultMarkB.Text = "✖";
+                    txtResultMarkB.Foreground = new SolidColorBrush(Colors.Crimson);
+                }
+                StartClearResultTimer(TimeSpan.FromSeconds(3)); // 3秒後に消す
             }
-            else
+            catch (Exception ex)
             {
-                // 失敗時の処理（必要に応じて追加）
+                // ここで例外を完全に吸収
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
                 txtResultMark.Text = "✖";
                 txtResultMark.Foreground = new SolidColorBrush(Colors.Crimson);
             }
+            finally
+            {
+                lock (_procLock)
+                {
+                    _isProcessing = false;
+                }
+                btnConvert.Content = "\uEE4A";   // StopSolid
+
+            }
         }
+
+        private void StartClearResultTimer(TimeSpan delay)
+        {
+            var timer = new DispatcherTimer();
+            timer.Interval = delay;
+
+            timer.Tick += (s, e) =>
+            {
+                timer.Stop();
+                InitializeProgressBar(false);
+            };
+
+            timer.Start();
+        }
+
 
         private bool ChkFileExists(string path)
         {
@@ -324,12 +392,6 @@ namespace C2E4XML
             progress.Report(100);
             status.Report("完了");
         }
-
-        private void BtnCancel_Click(object sender, RoutedEventArgs e)
-        {
-            _cts?.Cancel();
-        }
-
 
         private void BtnExplorer_Click(object sender, RoutedEventArgs e)
         {

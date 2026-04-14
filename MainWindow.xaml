@@ -18,7 +18,7 @@
                      Value="{Binding ProgressValue}"/>
             <StackPanel Orientation="Horizontal" Height="20">
                 <TextBox x:Name="txtResultMark" IsReadOnly="True" IsHitTestVisible="False" Width="20" Height="20" FontSize="12"
-             BorderThickness="0" Background="Transparent" Text="✔" Padding="0" HorizontalContentAlignment="Right" VerticalAlignment="Top" Foreground="SeaGreen"/>
+             BorderThickness="0" Background="Transparent" Text="✔" Padding="0" HorizontalContentAlignment="Right" Foreground="SeaGreen"/>
                 <TextBox x:Name="txtStatus" IsReadOnly="True" IsHitTestVisible="False" Width="200" Height="20" FontSize="10"
                          BorderThickness="0" Background="Transparent" Padding="0,4,0,0" Text="あああtest..." />
             </StackPanel>
@@ -100,15 +100,19 @@
                     </ControlTemplate>
                 </ToggleButton.Template>
             </ToggleButton>
+
             <!--変換ボタン-->
-            <Button x:Name="btnCancel" Content="Cancel" Width="50" Height="20" Margin="10,0,0,0" Padding="0" FontSize="10" Click="BtnCancel_Click" />
-            <Button x:Name="btnConvert" Height="40" Width="100" 
+            <Button x:Name="btnConvert" Height="32" Width="100" Margin="200,0,0,0" VerticalContentAlignment="Top"
                 HorizontalAlignment="Right" VerticalAlignment="Center"
                 Cursor="Hand" 
                 Style="{DynamicResource AccentButtonStyle}" 
                 Content="&#xEE4A;" 
                 FontSize="20" FontFamily="{StaticResource SymbolThemeFontFamily}" 
                 ToolTip="変換" Click="BtnConvert_Click" />
+            <TextBox x:Name="txtResultMarkB" IsReadOnly="True" IsHitTestVisible="False" Width="20" Height="20" FontSize="15"
+             BorderThickness="0" Background="Transparent" Text="✔" Padding="0" HorizontalContentAlignment="Right" 
+                     VerticalAlignment="Center" Margin="0,10,0,0" Foreground="SeaGreen"/>
+
             <!--
             <TextBlock Text="✔️" FontSize="20" Foreground="SeaGreen" VerticalAlignment="Center"/>
             <TextBlock Text="❌" FontSize="20" Foreground="Crimson"/>
