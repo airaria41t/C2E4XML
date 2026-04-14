@@ -6,49 +6,88 @@
         xmlns:local="clr-namespace:C2E4XML"
         mc:Ignorable="d"
         Title="Convert" Icon="/とけちゃう猫さん.png"
-        Height="450" Width="550" 
+        Height="475" Width="550" 
         ResizeMode="CanMinimize" WindowStyle="SingleBorderWindow" Loaded="MainWindow_Loaded">
     <Grid>
+        
+        <!--進捗ステータス-->
+        <StackPanel x:Name="stkProgressBar" Orientation="Vertical" Height="25" VerticalAlignment="Top" Visibility="Visible">
+            <!--変換進捗バー-->
+            <ProgressBar x:Name="prgConvert" 
+                     Height="5" Minimum="0" Maximum="100" VerticalAlignment="Top"
+                     Value="{Binding ProgressValue}"/>
+            <StackPanel Orientation="Horizontal" Height="20">
+                <TextBox x:Name="txtResultMark" IsReadOnly="True" IsHitTestVisible="False" Width="20" Height="20" FontSize="12"
+             BorderThickness="0" Background="Transparent" Text="✔" Padding="0" HorizontalContentAlignment="Right" VerticalAlignment="Top" Foreground="SeaGreen"/>
+                <TextBox x:Name="txtStatus" IsReadOnly="True" IsHitTestVisible="False" Width="200" Height="20" FontSize="10"
+                         BorderThickness="0" Background="Transparent" Padding="0,4,0,0" Text="あああtest..." />
+            </StackPanel>
+        </StackPanel>
+
         <!--ファイルパス設定-->
+        <!--
         <GroupBox x:Name="grpFilePath" Header="  ファイルパス"
                   HorizontalAlignment="Center" VerticalAlignment="Top" 
                   Height="110" Width="500" 
                   Margin="0,15,0,0"
                   Background="{DynamicResource ControlFillColorDefaultBrush}">
-            <!--テキストボックス・ボタン並び整理-->
-            <StackPanel Orientation="Horizontal" Height="50" VerticalAlignment="Top">
+        -->    
+        <!--テキストボックス・ボタン並び整理-->
+        <StackPanel Orientation="Vertical"
+                    VerticalAlignment="Top" Margin="0,30"
+                    HorizontalAlignment="Center"
+                    Height="75" 
+                    Background="{DynamicResource ControlFillColorDefaultBrush}">
+            <TextBox
+                Width="130" FontSize="15"
+                VerticalAlignment="Top" HorizontalAlignment="Left"
+                IsReadOnly="True" IsHitTestVisible="False" 
+                BorderThickness="0" Background="Transparent" 
+                Text="ファイルパス" />
+            <StackPanel Orientation="Horizontal"
+                        Height="40"
+                        VerticalAlignment="Top"
+                        HorizontalAlignment="Center">
                 <!--パス入力欄-->
                 <TextBox x:Name="txtFilePath" Text="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-                         VerticalContentAlignment="Bottom"
-                         Height="30" Width="420" Margin="10,0,0,0" 
+                         VerticalContentAlignment="Top"
+                         Height="30" Width="420" Margin="5,0,0,0" 
                          AllowDrop="True"
+                         FontSize="16"
+                         VerticalAlignment="Top"
                          PreviewDragOver="TxtFilePath_PreviewDragOver" 
                          PreviewDrop="TxtFilePath_PreviewDrop" />
                 <!--オープンファイルダイアログ表示-->
                 <Button x:Name="btnFilePath" Content="&#xE8A5;" 
                         FontFamily="{StaticResource SymbolThemeFontFamily}"
-                        Height="40" Width="50" Margin="5,0,0,0"
-                        Cursor="Hand" HorizontalAlignment="Left" 
+                        Height="33" Width="40" Margin="5,0,5,0"
+                        Cursor="Hand" FontSize="18"
+                        HorizontalAlignment="Left" VerticalAlignment="Top"
+                        HorizontalContentAlignment="Left"
                         Style="{DynamicResource AccentButtonStyle}" 
                         ToolTip="ファイル設定" Click="BtnFilePath_Click"/>
             </StackPanel>
-        </GroupBox>
-        <StackPanel Orientation="Horizontal" Height="50" VerticalAlignment="Top" Margin="0,130">
-            <!--トグル説明-->
+        </StackPanel>
+        
+
+    <!--    
+    </GroupBox>
+        -->
+        <StackPanel Orientation="Horizontal" Height="50" VerticalAlignment="Top" Margin="0,105">
+            <!--トグル-->
             <TextBlock Text="詳細"
                VerticalAlignment="Center"
                Margin="100,0,0,0"
                FontSize="15"/>
-            <!--トグル設定-->
             <ToggleButton x:Name="tglDetailOut" 
-                          Width="57" Height="26" Margin="5,0,0,0" 
+                          Width="40" Height="20" Margin="3,0,0,0" 
                           HorizontalAlignment="Left" VerticalAlignment="Center" 
                           IsChecked="True">
                 <ToggleButton.Template>
                     <ControlTemplate TargetType="ToggleButton">
                         <Grid>
                             <Border x:Name="SwitchBorder" CornerRadius="11" Background="LightGray"/>
-                            <Ellipse x:Name="Knob" Width="20" Height="20" Margin="3" Fill="White" 
+                            <Ellipse x:Name="Knob" Width="16" Height="16" Margin="2" Fill="White" 
                                      HorizontalAlignment="Left" VerticalAlignment="Center"/>
                         </Grid>
                         <ControlTemplate.Triggers>
@@ -62,24 +101,31 @@
                 </ToggleButton.Template>
             </ToggleButton>
             <!--変換ボタン-->
-            <Button x:Name="btnConvert" Height="40" Width="50" Margin="100,0,0,0"
-                HorizontalAlignment="Left" VerticalAlignment="Center"
+            <Button x:Name="btnCancel" Content="Cancel" Width="50" Height="20" Margin="10,0,0,0" Padding="0" FontSize="10" Click="BtnCancel_Click" />
+            <Button x:Name="btnConvert" Height="40" Width="100" 
+                HorizontalAlignment="Right" VerticalAlignment="Center"
                 Cursor="Hand" 
                 Style="{DynamicResource AccentButtonStyle}" 
-                Content="&#xEDAB;" 
+                Content="&#xEE4A;" 
                 FontSize="20" FontFamily="{StaticResource SymbolThemeFontFamily}" 
                 ToolTip="変換" Click="BtnConvert_Click" />
-
+            <!--
+            <TextBlock Text="✔️" FontSize="20" Foreground="SeaGreen" VerticalAlignment="Center"/>
+            <TextBlock Text="❌" FontSize="20" Foreground="Crimson"/>
+            -->
         </StackPanel>
+        
+
+
         <!--結果-->
         <GroupBox x:Name="grpResult" Header="  結果" 
                   HorizontalAlignment="Center" VerticalAlignment="Top"
-                  Height="215" Width="500" Margin="0,185,0,0" 
+                  Height="215" Width="500" Margin="0,210,0,0" 
                   Background="{DynamicResource ControlFillColorDefaultBrush}">
             <!--表示整頓用-->
             <StackPanel Orientation="Vertical" Height="180" VerticalAlignment="Top" Margin="10,0,0,0">
                 <!--結果ログ表示-->
-                <TextBox x:Name="txtResult" Text="結果ログいろいろ" 
+                <TextBox x:Name="txtLog" Text="結果ログいろいろ" 
                          Cursor="IBeam" 
                          Margin="0,0,0,0" Height="100" Width="480"
                          IsReadOnly="True"
@@ -114,11 +160,6 @@
                 </StackPanel>
             </StackPanel>
         </GroupBox>
-        <!--変換進捗バー-->
-        <ProgressBar x:Name="prgConvert"
-                     Height="4"
-                     Minimum="0" Maximum="100"
-                     Value="{Binding ProgressValue}"
-                     VerticalAlignment="Bottom" />
+
     </Grid>
 </Window>
