@@ -11,7 +11,7 @@
     <Window.Resources>
         <local:BoolToColorConverter x:Key="BoolToColorConverter"/>
     </Window.Resources>
-
+    
     <Grid>
 
         <!--進捗ステータス-->
@@ -176,39 +176,133 @@
           HeadersVisibility="Column"
           CanUserAddRows="False"
           CanUserDeleteRows="False"
-          Background="Black"
-          Foreground="White"
-          BorderThickness="0"
-          RowHeight="28"
+          Background="{DynamicResource ControlFillColorDefaultBrush}"
+          Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+          BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+          BorderThickness="1"
+                  RowHeight="28"
           Margin="0,430,0,0"
           HorizontalAlignment="Center"
           Width="900">
+            <!-- ★ ヘッダー（タイトル列）の色を内容列と分ける -->
+            <DataGrid.Resources>
+                <Style TargetType="DataGridColumnHeader">
+                    <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}"/>
+                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                    <Setter Property="Padding" Value="6,4"/>
+                </Style>
+            </DataGrid.Resources>
 
+            <!-- ★ セル（内容列）の色：テーマ連動＋選択しても色が変わらない -->
+            <DataGrid.CellStyle>
+                <Style TargetType="DataGridCell">
+                    <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}"/>
+                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
+
+                    <Style.Triggers>
+                        <!-- 選択しても見た目を変えない（あなたの要件） -->
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.CellStyle>
+            
             <DataGrid.Columns>
 
                 <!-- 成功/失敗アイコン -->
                 <DataGridTemplateColumn Header="状態" Width="50">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Rectangle Width="14" Height="14"
-                               Fill="{Binding IsSuccess, Converter={StaticResource BoolToColorConverter}}"/>
+                            <TextBlock Text="{Binding StatusIcon}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="{Binding StatusVerticalAlignment}"
+                                       FontSize="16"
+                                       FontWeight="Bold"
+                                       Foreground="{Binding IsSuccess, Converter={StaticResource BoolToColorConverter}}"
+                                       IsHitTestVisible="False"/>
+                            <!-- ★ TextBlock を TemplateColumn にして IsHitTestVisible=False
+                                   → クリックや選択の対象から外す -->
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
+                <!--
+                <DataGridTextColumn Header="状態" Binding="{Binding StatusIcon}" Width="50">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="HorizontalAlignment" Value="Center"/>
+                            <Setter Property="VerticalAlignment" Value="{Binding StatusVerticalAlignment}"/>
+                            <Setter Property="FontSize" Value="16"/>
+                            <Setter Property="FontWeight" Value="Bold"/>
+                            <Setter Property="Foreground"
+                                    Value="{Binding IsSuccess, Converter={StaticResource BoolToColorConverter}}"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                -->
+                
+                <!-- 変換元パス -->
+                <!-- 修正後（右から表示はそのまま／選択・編集だけ禁止） -->
 
                 <!-- 変換元パス -->
-                <DataGridTextColumn Header="変換元" Binding="{Binding SourcePath}" Width="2*"/>
+                <DataGridTemplateColumn Header="変換元" Width="2*">
+                    <DataGridTemplateColumn.CellStyle>
+                        <Style TargetType="DataGridCell">
+                            <Setter Property="FlowDirection" Value="RightToLeft"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                            <!-- ★ Cell の FlowDirection/配置はそのまま維持 -->
+                        </Style>
+                    </DataGridTemplateColumn.CellStyle>
 
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding SourcePath}"
+                                       FlowDirection="RightToLeft"
+                                       TextAlignment="Left"
+                                       IsHitTestVisible="False"
+                                       Focusable="False"/>
+                            <!-- ★ FlowDirection=RightToLeft / TextAlignment=Left は維持
+                                   ★ IsHitTestVisible=False で選択・編集・クリックを禁止 -->
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <!--
+                <DataGridTextColumn Header="変換元" Binding="{Binding SourcePath}" Width="2*">
+                    <DataGridTextColumn.CellStyle>
+                        <Style TargetType="DataGridCell">
+                            <Setter Property="FlowDirection" Value="RightToLeft"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                        </Style>
+                    </DataGridTextColumn.CellStyle>
+
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="FlowDirection" Value="RightToLeft"/>
+                            <Setter Property="TextAlignment" Value="Left"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                -->
+                
                 <!-- 結果（クリックでコピー） -->
                 <DataGridTemplateColumn Header="結果" Width="3*">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding ResultText}"
                                Cursor="Hand"
-                               TextWrapping="Wrap">
+                               TextWrapping="NoWrap">
                                 <TextBlock.InputBindings>
                                     <MouseBinding Gesture="LeftClick"
-                                          Command="{Binding DataContext.CopyResultCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                          Command="{Binding DataContext.CopyResultCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                           CommandParameter="{Binding ResultText}"/>
                                 </TextBlock.InputBindings>
                             </TextBlock>
