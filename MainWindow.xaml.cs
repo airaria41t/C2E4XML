@@ -187,14 +187,17 @@ namespace C2E4XML
                     await ConvertXmlToExcel(
                         path, bDetail, progress, status,
                         excelPath => {
-                            // 成功ログ
-                            LogEntries.Insert(0, new LogEntry {
-                                SourcePath = path,
-                                IsSuccess = true,
-                                ResultText = excelPath,
-                                ActionCommand = new RelayCommand(() => {
-                                    Process.Start(new ProcessStartInfo(excelPath) { UseShellExecute = true });
-                                })
+                            Application.Current.Dispatcher.Invoke(() =>
+                            {
+                                // 成功ログ
+                                LogEntries.Insert(0, new LogEntry {
+                                    SourcePath = path,
+                                    IsSuccess = true,
+                                    ResultText = excelPath,
+                                    ActionCommand = new RelayCommand(() => {
+                                        Process.Start(new ProcessStartInfo(excelPath) { UseShellExecute = true });
+                                    })
+                                });
                             });
                         }, token);
                 });
@@ -228,45 +231,55 @@ namespace C2E4XML
             catch (OperationCanceledException ex)
             {
                 string log = string.IsNullOrEmpty(ex.Message) ? "キャンセルされました。" : ex.Message;
-                LogEntries.Insert(0, new LogEntry
+                Application.Current.Dispatcher.Invoke(() =>
                 {
-                    SourcePath = txtFilePath.Text,
-                    IsSuccess = false,
-                    ResultText = log,
-                    ActionCommand = new RelayCommand(() =>
+                    LogEntries.Insert(0, new LogEntry
                     {
-                        MessageBox.Show(log, "キャンセル", MessageBoxButton.OK, MessageBoxImage.Error);
-                    })
+                        SourcePath = txtFilePath.Text,
+                        IsSuccess = false,
+                        ResultText = log,
+                        ActionCommand = new RelayCommand(() =>
+                        {
+                            MessageBox.Show(log, "キャンセル", MessageBoxButton.OK, MessageBoxImage.Error);
+                        })
+                    });
                 });
                 return false;
             }
+
             catch (IOException ex) when (((int)ex.HResult & 0xFFFF) == 0x20)
             {
                 string log = "Excel ファイルが開いているため、上書きできません。閉じてから再実行してください。";
-                LogEntries.Insert(0, new LogEntry
+                Application.Current.Dispatcher.Invoke(() =>
                 {
-                    SourcePath = txtFilePath.Text,
-                    IsSuccess = false,
-                    ResultText = log,
-                    ActionCommand = new RelayCommand(() =>
+                    LogEntries.Insert(0, new LogEntry
                     {
-                        MessageBox.Show(log, "変換失敗", MessageBoxButton.OK, MessageBoxImage.Error);
-                    })
+                        SourcePath = txtFilePath.Text,
+                        IsSuccess = false,
+                        ResultText = log,
+                        ActionCommand = new RelayCommand(() =>
+                        {
+                            MessageBox.Show(log, "変換失敗", MessageBoxButton.OK, MessageBoxImage.Error);
+                        })
+                    });
                 });
                 MessageBox.Show(log, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
             catch (Exception ex)
             {
-                LogEntries.Insert(0, new LogEntry
+                Application.Current.Dispatcher.Invoke(() =>
                 {
-                    SourcePath = txtFilePath.Text,
-                    IsSuccess = false,
-                    ResultText = ex.Message,
-                    ActionCommand = new RelayCommand(() =>
+                    LogEntries.Insert(0, new LogEntry
                     {
-                        MessageBox.Show(ex.Message, "変換失敗", MessageBoxButton.OK, MessageBoxImage.Error);
-                    })
+                        SourcePath = txtFilePath.Text,
+                        IsSuccess = false,
+                        ResultText = ex.Message,
+                        ActionCommand = new RelayCommand(() =>
+                        {
+                            MessageBox.Show(ex.Message, "変換失敗", MessageBoxButton.OK, MessageBoxImage.Error);
+                        })
+                    });
                 });
 
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
