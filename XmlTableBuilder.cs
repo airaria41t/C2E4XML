@@ -1,14 +1,9 @@
 ﻿namespace C2E4XML
 {
-    internal class XmlTableBuilder
+    internal class XmlTableBuilder(XmlDataNode root)
     {
-        private readonly XmlDataNode _root;
-        private readonly HashSet<string> _created = new HashSet<string>();
-
-        public XmlTableBuilder(XmlDataNode root)
-        {
-            _root = root;
-        }
+        private readonly XmlDataNode _root = root;
+        private readonly HashSet<string> _created = [];
 
         public Dictionary<string, List<Dictionary<string, string>>> Build()
         {
@@ -142,8 +137,10 @@
                     var rows = new List<Dictionary<string, string>>();
                     foreach (var s in children)
                     {
-                        var row = new Dictionary<string, string>();
-                        row["type"] = s.Name; // ✔ type 列は先頭
+                        var row = new Dictionary<string, string>
+                        {
+                            ["type"] = s.Name // ✔ type 列は先頭
+                        };
                         Flatten(s, "", row);
                         rows.Add(row);
                     }
@@ -184,7 +181,7 @@
                     }
 
                     _created.Add(tablePath);
-                    result[tablePath] = new List<Dictionary<string, string>> { row };
+                    result[tablePath] = [row];
                 }
 
                 return;
@@ -198,11 +195,13 @@
                 string tablePath = path;
                 if (!_created.Contains(tablePath))
                 {
-                    var row = new Dictionary<string, string>();
-                    row[path.Split('.').Last()] = node.Value;
+                    var row = new Dictionary<string, string>
+                    {
+                        [path.Split('.').Last()] = node.Value
+                    };
 
                     _created.Add(tablePath);
-                    result[tablePath] = new List<Dictionary<string, string>> { row };
+                    result[tablePath] = [row];
                 }
 
                 return;
@@ -234,7 +233,7 @@
                         Flatten(only, "", row);
 
                         _created.Add(tablePath);
-                        result[tablePath] = new List<Dictionary<string, string>> { row };
+                        result[tablePath] = [row];
                     }
 
                     return;
@@ -252,7 +251,7 @@
             Dictionary<string, List<Dictionary<string, string>>> result)
         {
             if (_created.Add(path))
-                result[path] = new List<Dictionary<string, string>>();
+                result[path] = [];
         }
 
         private void AddAttributeTable(string path, XmlDataNode node,
@@ -264,7 +263,7 @@
             foreach (var attr in node.Attributes)
                 row[$"@{attr.Key}"] = attr.Value;
 
-            result[path] = new List<Dictionary<string, string>> { row };
+            result[path] = [row];
         }
 
         /*private string GetSignature(XmlDataNode node)
@@ -274,7 +273,7 @@
             return string.Join(",", childNames) + "|" + string.Join(",", attrNames);
         }*/
 
-        private string GetSignature(XmlDataNode node)
+        private static string GetSignature(XmlDataNode node)
         {
             // 自身の属性名
             var attrNames = node.Attributes.Keys
@@ -292,7 +291,7 @@
             return $"{string.Join(",", attrNames)}|{string.Join(",", childSigs)}";
         }
 
-        private bool HasSameNameDescendants(XmlDataNode node)
+        private static bool HasSameNameDescendants(XmlDataNode node)
         {
             // 子孫に同名兄弟がいるか？
             foreach (var child in node.Children)
@@ -312,7 +311,7 @@
         }
 
 
-        private void Flatten(XmlDataNode node, string prefix, Dictionary<string, string> row)
+        private static void Flatten(XmlDataNode node, string prefix, Dictionary<string, string> row)
         {
             if (!string.IsNullOrEmpty(node.Value))
             {

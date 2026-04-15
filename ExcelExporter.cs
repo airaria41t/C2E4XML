@@ -11,7 +11,7 @@ namespace C2E4XML
         //    _tables = tables;
         //}
 
-        public void Export(string filePath, Dictionary<string, List<Dictionary<string, string>>> tables)
+        public static void Export(string filePath, Dictionary<string, List<Dictionary<string, string>>> tables)
         {
             using var workbook = new XLWorkbook();
 
@@ -118,10 +118,10 @@ namespace C2E4XML
             return name;
         }
 
-        public void Export(string filePath,XmlDataNode data)
+        public static void Export(string filePath,XmlDataNode data)
         {
-            var flattener = new XmlFlattener();
-            var rows = flattener.Flatten(data).ToList();
+            _ = new XmlFlattener();
+            var rows = XmlFlattener.Flatten(data).ToList();
 
             using var workbook = new XLWorkbook();
             var sheet = workbook.Worksheets.Add("XML");

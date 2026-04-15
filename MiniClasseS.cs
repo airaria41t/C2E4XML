@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
-
 
 namespace C2E4XML
 {
@@ -32,65 +32,88 @@ namespace C2E4XML
 
     public class LogEntry
     {
-        public string SourcePath { get; set; }
+        public string? SourcePath { get; set; }
         public bool IsSuccess { get; set; }
-        public string ResultText { get; set; }   // 出力パス or 失敗原因
-        public ICommand ActionCommand { get; set; }
+        public string? ResultText { get; set; }   // 出力パス or 失敗原因
+        public ICommand? ActionCommand { get; set; }
+
+        // ✔ / ✖ を返すプロパティ
+        public string StatusIcon => IsSuccess ? "✔" : "✖";
+
+        public VerticalAlignment StatusVerticalAlignment
+    => IsSuccess ? VerticalAlignment.Top : VerticalAlignment.Center;
+
+        public FlowDirection ResultFlowDirection
+    => IsSuccess ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+
     }
 
     public class BoolToColorConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-            => (bool)value ? Brushes.LimeGreen : Brushes.Red;
+        {
+            bool isSuccess = value is bool b && b;
+
+            return isSuccess
+                ? Brushes.SeaGreen
+                : Brushes.Crimson;
+        }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
             => throw new NotImplementedException();
     }
 
-    public class ConvertResult
+    public class BoolToFlowDirectionConverter : IValueConverter
     {
-        public bool IsSuccess { get; set; }
-        public string ExcelPath { get; set; }
-        public string ErrorMessage { get; set; }
-    }
-
-    public class RelayCommand : ICommand
-    {
-        private readonly Action _execute;
-        private readonly Func<bool> _canExecute;
-
-        public RelayCommand(Action execute, Func<bool> canExecute = null)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            _execute = execute;
-            _canExecute = canExecute;
+            if (value is bool b && b)
+                return FlowDirection.RightToLeft;   // 成功時：右側（ファイル名）を見せる
+
+            return FlowDirection.LeftToRight;       // 失敗時：普通の左→右
         }
 
-        public bool CanExecute(object parameter) => _canExecute == null || _canExecute();
-
-        public void Execute(object parameter) => _execute();
-
-        public event EventHandler CanExecuteChanged;
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
     }
 
-    public class RelayCommand<T> : ICommand
-    {
-        private readonly Action<T> _execute;
-        private readonly Func<T, bool> _canExecute;
 
-        public RelayCommand(Action<T> execute, Func<T, bool> canExecute = null)
+    public class RelayCommand(Action execute, Func<bool>? canExecute = null) : ICommand
+    {
+        private readonly Action _execute = execute ?? throw new ArgumentNullException(nameof(execute));
+        private readonly Func<bool>? _canExecute = canExecute;
+
+        public bool CanExecute(object? parameter)
+            => _canExecute?.Invoke() ?? true;
+
+        public void Execute(object? parameter)
+            => _execute();
+
+        public event EventHandler? CanExecuteChanged;
+
+        public void RaiseCanExecuteChanged()
+            => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public class RelayCommand<T>(Action<T> execute, Func<T, bool>? canExecute = null) : ICommand
+    {
+        private readonly Action<T> _execute = execute ?? throw new ArgumentNullException(nameof(execute));
+        private readonly Func<T, bool>? _canExecute = canExecute;
+
+        public bool CanExecute(object? parameter)
         {
-            _execute = execute;
-            _canExecute = canExecute;
+            if (_canExecute == null) return true;
+            if (parameter == null && default(T) != null)
+                return _canExecute(default!);
+            return _canExecute((T)parameter!);
         }
 
-        public bool CanExecute(object parameter)
-            => _canExecute == null || _canExecute((T)parameter);
+        public void Execute(object? parameter)
+            => _execute((T)parameter!);
 
-        public void Execute(object parameter)
-            => _execute((T)parameter);
+        public event EventHandler? CanExecuteChanged;
 
-        public event EventHandler CanExecuteChanged;
+        public void RaiseCanExecuteChanged()
+            => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
-
-
 }

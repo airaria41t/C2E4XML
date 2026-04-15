@@ -17,12 +17,11 @@ namespace C2E4XML
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly object _procLock = new object();
+        private readonly Lock _procLock = new();
         private bool _isProcessing = false;
         private CancellationTokenSource? _cts;
 
-        public ObservableCollection<LogEntry> LogEntries { get; }
-        = new ObservableCollection<LogEntry>();
+        public ObservableCollection<LogEntry> LogEntries { get; } = [];
         public ICommand CopyResultCommand { get; private set; }
 
         public MainWindow()
@@ -125,8 +124,7 @@ namespace C2E4XML
                 if (!e.Data.GetDataPresent(DataFormats.FileDrop))
                     return;
 
-                var files = e.Data.GetData(DataFormats.FileDrop) as string[];
-                if (files == null || files.Length == 0)
+                if (e.Data.GetData(DataFormats.FileDrop) is not string[] files || files.Length == 0)
                     return;
 
                 string path = files[0];
@@ -346,8 +344,10 @@ namespace C2E4XML
 
         private void StartClearResultTimer(TimeSpan delay)
         {
-            var timer = new DispatcherTimer();
-            timer.Interval = delay;
+            var timer = new DispatcherTimer
+            {
+                Interval = delay
+            };
 
             timer.Tick += (s, e) =>
             {
@@ -427,7 +427,7 @@ namespace C2E4XML
                 //
                 status.Report("Excel 出力中...");
                 ExcelExporter excel = new();
-                excel.Export(excelPath, loader.ReadData);
+                ExcelExporter.Export(excelPath, loader.ReadData);
 
             }
             else 
@@ -464,7 +464,7 @@ namespace C2E4XML
                 //
                 status.Report("Excel 出力中...");
                 ExcelExporter excel = new();
-                excel.Export(excelPath, tables);
+                ExcelExporter.Export(excelPath, tables);
 
             }
 
