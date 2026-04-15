@@ -1,8 +1,11 @@
 ﻿using ClosedXML.Excel;
 using DocumentFormat.OpenXml.Office2013.Drawing.ChartStyle;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Navigation;
 using System.Windows.Threading;
@@ -16,13 +19,24 @@ namespace C2E4XML
     {
         private readonly object _procLock = new object();
         private bool _isProcessing = false;
+        private CancellationTokenSource? _cts;
+
+        public ObservableCollection<LogEntry> LogEntries { get; }
+        = new ObservableCollection<LogEntry>();
+        public ICommand CopyResultCommand { get; private set; }
 
         public MainWindow()
         {
             InitializeComponent();
             Loaded += MainWindow_Loaded;
+
+            CopyResultCommand = new RelayCommand<string>(text =>
+            {
+                Clipboard.SetText(text);
+            });
+
+            DataContext = this;
         }
-        private CancellationTokenSource? _cts;
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
@@ -170,8 +184,20 @@ namespace C2E4XML
 
                 await Task.Run(async () =>
                 {
-                    await ConvertXmlToExcel(path, bDetail, progress, status, token);
-                }, token);
+                    await ConvertXmlToExcel(
+                        path, bDetail, progress, status,
+                        excelPath => {
+                            // 成功ログ
+                            LogEntries.Insert(0, new LogEntry {
+                                SourcePath = path,
+                                IsSuccess = true,
+                                ResultText = excelPath,
+                                ActionCommand = new RelayCommand(() => {
+                                    Process.Start(new ProcessStartInfo(excelPath) { UseShellExecute = true });
+                                })
+                            });
+                        }, token);
+                });
 
                 MessageBox.Show("Excel 出力が完了しました。", "完了", MessageBoxButton.OK, MessageBoxImage.Information);
 
@@ -199,17 +225,54 @@ namespace C2E4XML
                 //}
                 return true;
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException ex)
             {
+                string log = string.IsNullOrEmpty(ex.Message) ? "キャンセルされました。" : ex.Message;
+                LogEntries.Insert(0, new LogEntry
+                {
+                    SourcePath = txtFilePath.Text,
+                    IsSuccess = false,
+                    ResultText = log,
+                    ActionCommand = new RelayCommand(() =>
+                    {
+                        MessageBox.Show(log, "キャンセル", MessageBoxButton.OK, MessageBoxImage.Error);
+                    })
+                });
+                return false;
+            }
+            catch (IOException ex) when (((int)ex.HResult & 0xFFFF) == 0x20)
+            {
+                string log = "Excel ファイルが開いているため、上書きできません。閉じてから再実行してください。";
+                LogEntries.Insert(0, new LogEntry
+                {
+                    SourcePath = txtFilePath.Text,
+                    IsSuccess = false,
+                    ResultText = log,
+                    ActionCommand = new RelayCommand(() =>
+                    {
+                        MessageBox.Show(log, "変換失敗", MessageBoxButton.OK, MessageBoxImage.Error);
+                    })
+                });
+                MessageBox.Show(log, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
             catch (Exception ex)
             {
+                LogEntries.Insert(0, new LogEntry
+                {
+                    SourcePath = txtFilePath.Text,
+                    IsSuccess = false,
+                    ResultText = ex.Message,
+                    ActionCommand = new RelayCommand(() =>
+                    {
+                        MessageBox.Show(ex.Message, "変換失敗", MessageBoxButton.OK, MessageBoxImage.Error);
+                    })
+                });
+
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
         }
-
 
         private async void BtnConvert_Click(object sender, RoutedEventArgs e)
         {
@@ -307,7 +370,7 @@ namespace C2E4XML
             return true;
         }
 
-        private async Task ConvertXmlToExcel(string path,bool bDetail,IProgress<int> progress,IProgress<string> status,CancellationToken token)
+        private async Task ConvertXmlToExcel(string path, bool bDetail, IProgress<int> progress, IProgress<string> status, Action<string> onSuccess, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
             progress.Report(0);
@@ -321,6 +384,8 @@ namespace C2E4XML
             progress.Report(20);
             token.ThrowIfCancellationRequested();
 
+            string excelPath;
+
             //
             // ② トグルチェックによる処理分岐（テーブル構築の有無）
             //
@@ -332,7 +397,7 @@ namespace C2E4XML
                 // ③ パス設定
                 //
                 status.Report("Excel 出力先パス設定中...");
-                string excelPath = Path.ChangeExtension(path, ".xlsx");
+                excelPath = Path.ChangeExtension(path, ".xlsx");
                 progress.Report(40);
                 token.ThrowIfCancellationRequested();
 
@@ -340,7 +405,7 @@ namespace C2E4XML
                 // ④ ファイル既存チェック（上書き確認）
                 //
                 if (!ChkFileExists(excelPath)) 
-                    throw new OperationCanceledException(); // キャンセル扱い
+                    throw new OperationCanceledException("同名ファイルが既にあります。"); // キャンセル扱い
                 progress.Report(50);
                 token.ThrowIfCancellationRequested();
 
@@ -369,14 +434,15 @@ namespace C2E4XML
                 // ④ パス設定
                 //
                 status.Report("Excel 出力先パス設定中...");
-                string excelPath = Path.ChangeExtension(path, ".xlsx");
+                excelPath = Path.ChangeExtension(path, ".xlsx");
                 progress.Report(40);
                 token.ThrowIfCancellationRequested();
 
                 //
                 // ⑤ ファイル既存チェック（上書き確認）
                 //
-                if (!ChkFileExists(excelPath)) throw new OperationCanceledException(); // キャンセル扱い
+                if (!ChkFileExists(excelPath)) 
+                    throw new OperationCanceledException("同名ファイルが既にあります。"); // キャンセル扱い
                 progress.Report(50);
                 token.ThrowIfCancellationRequested();
 
@@ -391,6 +457,9 @@ namespace C2E4XML
 
             progress.Report(100);
             status.Report("完了");
+
+            // ★ 成功時だけパスを外に返す
+            onSuccess(excelPath);
         }
 
         private void BtnExplorer_Click(object sender, RoutedEventArgs e)

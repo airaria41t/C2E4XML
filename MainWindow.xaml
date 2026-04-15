@@ -6,10 +6,14 @@
         xmlns:local="clr-namespace:C2E4XML"
         mc:Ignorable="d"
         Title="Convert" Icon="/とけちゃう猫さん.png"
-        Height="475" Width="550" 
+        Height="632" Width="935" 
         ResizeMode="CanMinimize" WindowStyle="SingleBorderWindow" Loaded="MainWindow_Loaded">
+    <Window.Resources>
+        <local:BoolToColorConverter x:Key="BoolToColorConverter"/>
+    </Window.Resources>
+
     <Grid>
-        
+
         <!--進捗ステータス-->
         <StackPanel x:Name="stkProgressBar" Orientation="Vertical" Height="25" VerticalAlignment="Top" Visibility="Visible">
             <!--変換進捗バー-->
@@ -31,7 +35,7 @@
                   Height="110" Width="500" 
                   Margin="0,15,0,0"
                   Background="{DynamicResource ControlFillColorDefaultBrush}">
-        -->    
+        -->
         <!--テキストボックス・ボタン並び整理-->
         <StackPanel Orientation="Vertical"
                     VerticalAlignment="Top" Margin="0,30"
@@ -68,9 +72,9 @@
                         ToolTip="ファイル設定" Click="BtnFilePath_Click"/>
             </StackPanel>
         </StackPanel>
-        
 
-    <!--    
+
+        <!--    
     </GroupBox>
         -->
         <StackPanel Orientation="Horizontal" Height="50" VerticalAlignment="Top" Margin="0,105">
@@ -118,7 +122,7 @@
             <TextBlock Text="❌" FontSize="20" Foreground="Crimson"/>
             -->
         </StackPanel>
-        
+
 
 
         <!--結果-->
@@ -164,6 +168,68 @@
                 </StackPanel>
             </StackPanel>
         </GroupBox>
+
+        <!--ログ一覧（最新が上）-->
+        <DataGrid x:Name="dgLog"
+          ItemsSource="{Binding LogEntries}"
+          AutoGenerateColumns="False"
+          HeadersVisibility="Column"
+          CanUserAddRows="False"
+          CanUserDeleteRows="False"
+          Background="Black"
+          Foreground="White"
+          BorderThickness="0"
+          RowHeight="28"
+          Margin="0,430,0,0"
+          HorizontalAlignment="Center"
+          Width="900">
+
+            <DataGrid.Columns>
+
+                <!-- 成功/失敗アイコン -->
+                <DataGridTemplateColumn Header="状態" Width="50">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Rectangle Width="14" Height="14"
+                               Fill="{Binding IsSuccess, Converter={StaticResource BoolToColorConverter}}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <!-- 変換元パス -->
+                <DataGridTextColumn Header="変換元" Binding="{Binding SourcePath}" Width="2*"/>
+
+                <!-- 結果（クリックでコピー） -->
+                <DataGridTemplateColumn Header="結果" Width="3*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding ResultText}"
+                               Cursor="Hand"
+                               TextWrapping="Wrap">
+                                <TextBlock.InputBindings>
+                                    <MouseBinding Gesture="LeftClick"
+                                          Command="{Binding DataContext.CopyResultCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                          CommandParameter="{Binding ResultText}"/>
+                                </TextBlock.InputBindings>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <!-- 操作ボタン -->
+                <DataGridTemplateColumn Header="操作" Width="60">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="▶"
+                            Width="40" Height="22"
+                            Command="{Binding ActionCommand}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+            </DataGrid.Columns>
+        </DataGrid>
+
 
     </Grid>
 </Window>
