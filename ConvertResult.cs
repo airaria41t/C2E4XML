@@ -1,7 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace C2E4XML
+﻿namespace C2E4XML
 {
 }

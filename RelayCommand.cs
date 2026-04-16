@@ -1,8 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Input;
-
-namespace C2E4XML
+﻿namespace C2E4XML
 {
 }

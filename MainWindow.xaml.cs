@@ -1,14 +1,10 @@
-﻿using ClosedXML.Excel;
-using DocumentFormat.OpenXml.Office2013.Drawing.ChartStyle;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Navigation;
 using System.Windows.Threading;
 
 namespace C2E4XML
@@ -64,8 +60,8 @@ namespace C2E4XML
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
         //public ObservableCollection<LogEntry> LogEntries { get; } = [];
-        
-        public ICommand? CopyResultCommand { get; private set; }
+
+        //public ICommand? CopyResultCommand { get; private set; }
 
         public MainWindow()
         {
@@ -214,7 +210,8 @@ namespace C2E4XML
                 {
                     await ConvertXmlToExcel(
                         path, bDetail, progress, status,
-                        excelPath => {
+                        excelPath =>
+                        {
                             Application.Current.Dispatcher.Invoke(() =>
                             {
                                 // ★ 成功時：ステータスバーに表示
@@ -222,11 +219,11 @@ namespace C2E4XML
                                 ResultButtonIcon = "?"; // 仮アイコン
 
                                 // ★ 成功時：コピー可能
-                                CopyResultCommand = new RelayCommand(() =>
-                                {
-                                    Clipboard.SetText(excelPath);
-                                    ShowCopyToast();
-                                });
+                                //CopyResultCommand = new RelayCommand(() =>
+                                //{
+                                //    Clipboard.SetText(excelPath);
+                                //    ShowCopyToast();
+                                //});
                                 // ★ 成功時：ファイル実行
                                 ResultActionCommand = new RelayCommand(() =>
                                 {
@@ -253,7 +250,7 @@ namespace C2E4XML
                     ResultButtonIcon = "!"; // 仮アイコン
 
                     // ★ 失敗時：コピー不可
-                    CopyResultCommand = null;
+                    //CopyResultCommand = null;
 
                     ResultActionCommand = new RelayCommand(() =>
                     {
@@ -261,6 +258,8 @@ namespace C2E4XML
                             MessageBoxButton.OK, MessageBoxImage.Error);
                     });
                 });
+                MessageBox.Show(log, "キャンセル", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+
                 return false;
             }
 
@@ -271,7 +270,7 @@ namespace C2E4XML
                 {
                     LastResultMessage = log;
                     ResultButtonIcon = "!";
-                    CopyResultCommand = null;
+                    //CopyResultCommand = null;
 
                     ResultActionCommand = new RelayCommand(() =>
                     {
@@ -279,7 +278,7 @@ namespace C2E4XML
                             MessageBoxButton.OK, MessageBoxImage.Error);
                     });
                 });
-                MessageBox.Show(log, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(log, "エラー", MessageBoxButton.OK, MessageBoxImage.Exclamation);
                 return false;
             }
             catch (Exception ex)
@@ -288,7 +287,7 @@ namespace C2E4XML
                 {
                     LastResultMessage = ex.Message;
                     ResultButtonIcon = "!";
-                    CopyResultCommand = null;
+                    //CopyResultCommand = null;
 
                     ResultActionCommand = new RelayCommand(() =>
                     {
@@ -436,7 +435,7 @@ namespace C2E4XML
                 //
                 // ④ ファイル既存チェック（上書き確認）
                 //
-                if (!ChkFileExists(excelPath)) 
+                if (!ChkFileExists(excelPath))
                     throw new OperationCanceledException("同名ファイルが既にあります。"); // キャンセル扱い
                 progress.Report(50);
                 token.ThrowIfCancellationRequested();
@@ -449,7 +448,7 @@ namespace C2E4XML
                 ExcelExporter.Export(excelPath, loader.ReadData);
 
             }
-            else 
+            else
             {
                 // 詳細出力オンの場合はテーブル構築してから Excel 出力
 
@@ -473,7 +472,7 @@ namespace C2E4XML
                 //
                 // ⑤ ファイル既存チェック（上書き確認）
                 //
-                if (!ChkFileExists(excelPath)) 
+                if (!ChkFileExists(excelPath))
                     throw new OperationCanceledException("同名ファイルが既にあります。"); // キャンセル扱い
                 progress.Report(50);
                 token.ThrowIfCancellationRequested();
@@ -492,22 +491,6 @@ namespace C2E4XML
 
             // ★ 成功時だけパスを外に返す
             onSuccess(excelPath);
-        }
-
-        // ★ クリック時の視覚効果用
-        private void TxtResult_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            txtResult.Opacity = 0.6;
-        }
-
-        private void TxtResult_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            txtResult.Opacity = 1.0;
-        }
-
-        private void TxtResult_MouseLeave(object sender, MouseEventArgs e)
-        {
-            txtResult.Opacity = 1.0;
         }
 
         // ★ エクスプローラボタン（Excel起動）

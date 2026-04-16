@@ -53,7 +53,7 @@ namespace C2E4XML
                         var headerRange = sheet.Range(currentRow, 1, currentRow, header.Count);
                         headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
                         //headerRange.Style.Font.Bold = true;
-                        
+
                         currentRow++;
 
                         // データ行
@@ -118,7 +118,7 @@ namespace C2E4XML
             return name;
         }
 
-        public static void Export(string filePath,XmlDataNode data)
+        public static void Export(string filePath, XmlDataNode data)
         {
             _ = new XmlFlattener();
             var rows = XmlFlattener.Flatten(data).ToList();
