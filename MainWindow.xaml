@@ -6,27 +6,21 @@
         xmlns:local="clr-namespace:C2E4XML"
         mc:Ignorable="d"
         Title="Convert" Icon="/とけちゃう猫さん.png"
-        Height="632" Width="935" 
+        Height="250" Width="550" 
         ResizeMode="CanMinimize" WindowStyle="SingleBorderWindow" Loaded="MainWindow_Loaded">
     <Window.Resources>
         <local:BoolToColorConverter x:Key="BoolToColorConverter"/>
     </Window.Resources>
-    
-    <Grid>
 
-        <!--進捗ステータス-->
-        <StackPanel x:Name="stkProgressBar" Orientation="Vertical" Height="25" VerticalAlignment="Top" Visibility="Visible">
-            <!--変換進捗バー-->
-            <ProgressBar x:Name="prgConvert" 
-                     Height="5" Minimum="0" Maximum="100" VerticalAlignment="Top"
-                     Value="{Binding ProgressValue}"/>
-            <StackPanel Orientation="Horizontal" Height="20">
-                <TextBox x:Name="txtResultMark" IsReadOnly="True" IsHitTestVisible="False" Width="20" Height="20" FontSize="12"
-             BorderThickness="0" Background="Transparent" Text="✔" Padding="0" HorizontalContentAlignment="Right" Foreground="SeaGreen"/>
-                <TextBox x:Name="txtStatus" IsReadOnly="True" IsHitTestVisible="False" Width="200" Height="20" FontSize="10"
-                         BorderThickness="0" Background="Transparent" Padding="0,4,0,0" Text="あああtest..." />
-            </StackPanel>
-        </StackPanel>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- 上部 -->
+            <RowDefinition Height="*"/>
+            <!-- 中央 -->
+            <RowDefinition Height="Auto"/>
+            <!-- 下部 -->
+        </Grid.RowDefinitions>
 
         <!--ファイルパス設定-->
         <!--
@@ -37,8 +31,9 @@
                   Background="{DynamicResource ControlFillColorDefaultBrush}">
         -->
         <!--テキストボックス・ボタン並び整理-->
-        <StackPanel Orientation="Vertical"
-                    VerticalAlignment="Top" Margin="0,30"
+        <StackPanel Grid.Row="0"
+            Orientation="Vertical"
+                    VerticalAlignment="Top" Margin="0,15"
                     HorizontalAlignment="Center"
                     Height="75" 
                     Background="{DynamicResource ControlFillColorDefaultBrush}">
@@ -77,7 +72,8 @@
         <!--    
     </GroupBox>
         -->
-        <StackPanel Orientation="Horizontal" Height="50" VerticalAlignment="Top" Margin="0,105">
+        <StackPanel Grid.Row="1"
+            Orientation="Horizontal" Height="50" VerticalAlignment="Top" Margin="0">
             <!--トグル-->
             <TextBlock Text="詳細"
                VerticalAlignment="Center"
@@ -123,207 +119,57 @@
             -->
         </StackPanel>
 
-
-
         <!--結果-->
-        <GroupBox x:Name="grpResult" Header="  結果" 
-                  HorizontalAlignment="Center" VerticalAlignment="Top"
-                  Height="215" Width="500" Margin="0,210,0,0" 
-                  Background="{DynamicResource ControlFillColorDefaultBrush}">
-            <!--表示整頓用-->
-            <StackPanel Orientation="Vertical" Height="180" VerticalAlignment="Top" Margin="10,0,0,0">
-                <!--結果ログ表示-->
-                <TextBox x:Name="txtLog" Text="結果ログいろいろ" 
-                         Cursor="IBeam" 
-                         Margin="0,0,0,0" Height="100" Width="480"
-                         IsReadOnly="True"
-                         VerticalScrollBarVisibility="Visible" 
-                         HorizontalAlignment="Left"/>
-                <!--ボタン整頓用-->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,10,0">
-                    <!--エクスプローラ表示-->
-                    <Button x:Name="btnExplorer" Width="50" Height="40"
-                            HorizontalAlignment="Left" 
+        <!--進捗ステータス-->
+        <StackPanel Grid.Row="2"
+            x:Name="stkProgressBar" Orientation="Vertical" Height="30" VerticalAlignment="Bottom" Visibility="Visible" Margin="0">
+            <StackPanel Orientation="Horizontal" Height="25">
+                <TextBox x:Name="txtResultMark" 
+                         IsReadOnly="True" IsHitTestVisible="False" 
+                         Width="20" Height="25" FontSize="12"
+                         BorderThickness="0" 
+                         Background="Transparent" 
+                         Text="✔" 
+                         Padding="0" 
+                         HorizontalContentAlignment="Right" 
+                         VerticalContentAlignment="Center"
+                         Foreground="SeaGreen"/>
+                <TextBox x:Name="txtStatus" 
+                         IsReadOnly="True" IsHitTestVisible="False" 
+                         Width="150" Height="25" FontSize="10"
+                         BorderThickness="0" 
+                         Background="Transparent" 
+                         Padding="0,4,0,0" 
+                         VerticalContentAlignment="Center"
+                         Text="あああtest..." />
+                <TextBox x:Name="txtResult" 
+                         IsReadOnly="True" IsHitTestVisible="False" 
+                         Width="320" Height="25" FontSize="10"
+                         BorderThickness="0" 
+                         Background="Transparent" 
+                         Padding="0,4,0,0" 
+                         VerticalContentAlignment="Center"
+                         HorizontalContentAlignment="Right"
+                         HorizontalAlignment="Right"
+                         Text="あああtest..." />
+
+                <!--エクスプローラ表示-->
+                <Button x:Name="btnExplorer" Width="40" Height="25" 
                             Cursor="Hand"
                             Style="{DynamicResource AccentButtonStyle}"
                             Content="&#xEC50;" 
-                            FontSize="20" FontFamily="{StaticResource SymbolThemeFontFamily}" 
+                            FontSize="13" FontFamily="{StaticResource SymbolThemeFontFamily}" 
+                        VerticalContentAlignment="Top"
+                        VerticalAlignment="Bottom"
+                        HorizontalAlignment="Right"
                             ToolTip="エクスプローラ" Click="BtnExplorer_Click"/>
-                    <!--エクセル起動-->
-                    <Button x:Name="btnExcel" Width="50" Height="40"  Margin="5,0,5,0"
-                            HorizontalAlignment="Left" 
-                            Cursor="Hand"
-                            Style="{DynamicResource AccentButtonStyle}"
-                            Content="&#xECAA;"
-                            FontSize="20" FontFamily="{StaticResource SymbolThemeFontFamily}" 
-                            ToolTip="Excel" Click="BtnExcel_Click"/>
-                    <!--パスコピー-->
-                    <Button x:Name="btnCopy" Width="50" Height="40" 
-                            HorizontalAlignment="Left" 
-                            Cursor="Hand"
-                            Style="{DynamicResource AccentButtonStyle}" 
-                            Content="&#xE8C8;" 
-                            FontSize="20" FontFamily="{StaticResource SymbolThemeFontFamily}" 
-                            ToolTip="パスコピー" Click="BtnCopy_Click"/>
-                </StackPanel>
             </StackPanel>
-        </GroupBox>
+            <!--変換進捗バー-->
+            <ProgressBar x:Name="prgConvert" 
+                     Height="5" Minimum="0" Maximum="100" VerticalAlignment="Bottom"
+                     Value="{Binding ProgressValue}"/>
 
-        <!--ログ一覧（最新が上）-->
-        <DataGrid x:Name="dgLog"
-          ItemsSource="{Binding LogEntries}"
-          AutoGenerateColumns="False"
-          HeadersVisibility="Column"
-          CanUserAddRows="False"
-          CanUserDeleteRows="False"
-          Background="{DynamicResource ControlFillColorDefaultBrush}"
-          Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-          BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
-          BorderThickness="1"
-                  RowHeight="28"
-          Margin="0,430,0,0"
-          HorizontalAlignment="Center"
-          Width="900">
-            <!-- ★ ヘッダー（タイトル列）の色を内容列と分ける -->
-            <DataGrid.Resources>
-                <Style TargetType="DataGridColumnHeader">
-                    <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
-                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
-                    <Setter Property="FontWeight" Value="Bold"/>
-                    <Setter Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}"/>
-                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                    <Setter Property="Padding" Value="6,4"/>
-                </Style>
-            </DataGrid.Resources>
-
-            <!-- ★ セル（内容列）の色：テーマ連動＋選択しても色が変わらない -->
-            <DataGrid.CellStyle>
-                <Style TargetType="DataGridCell">
-                    <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}"/>
-                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
-                    <Setter Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}"/>
-                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
-
-                    <Style.Triggers>
-                        <!-- 選択しても見た目を変えない（あなたの要件） -->
-                        <Trigger Property="IsSelected" Value="True">
-                            <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}"/>
-                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
-                            <Setter Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}"/>
-                        </Trigger>
-                    </Style.Triggers>
-                </Style>
-            </DataGrid.CellStyle>
-            
-            <DataGrid.Columns>
-
-                <!-- 成功/失敗アイコン -->
-                <DataGridTemplateColumn Header="状態" Width="50">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding StatusIcon}"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="{Binding StatusVerticalAlignment}"
-                                       FontSize="16"
-                                       FontWeight="Bold"
-                                       Foreground="{Binding IsSuccess, Converter={StaticResource BoolToColorConverter}}"
-                                       IsHitTestVisible="False"/>
-                            <!-- ★ TextBlock を TemplateColumn にして IsHitTestVisible=False
-                                   → クリックや選択の対象から外す -->
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                <!--
-                <DataGridTextColumn Header="状態" Binding="{Binding StatusIcon}" Width="50">
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="HorizontalAlignment" Value="Center"/>
-                            <Setter Property="VerticalAlignment" Value="{Binding StatusVerticalAlignment}"/>
-                            <Setter Property="FontSize" Value="16"/>
-                            <Setter Property="FontWeight" Value="Bold"/>
-                            <Setter Property="Foreground"
-                                    Value="{Binding IsSuccess, Converter={StaticResource BoolToColorConverter}}"/>
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
-                </DataGridTextColumn>
-                -->
-                
-                <!-- 変換元パス -->
-                <!-- 修正後（右から表示はそのまま／選択・編集だけ禁止） -->
-
-                <!-- 変換元パス -->
-                <DataGridTemplateColumn Header="変換元" Width="2*">
-                    <DataGridTemplateColumn.CellStyle>
-                        <Style TargetType="DataGridCell">
-                            <Setter Property="FlowDirection" Value="RightToLeft"/>
-                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                            <Setter Property="VerticalContentAlignment" Value="Center"/>
-                            <!-- ★ Cell の FlowDirection/配置はそのまま維持 -->
-                        </Style>
-                    </DataGridTemplateColumn.CellStyle>
-
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding SourcePath}"
-                                       FlowDirection="RightToLeft"
-                                       TextAlignment="Left"
-                                       IsHitTestVisible="False"
-                                       Focusable="False"/>
-                            <!-- ★ FlowDirection=RightToLeft / TextAlignment=Left は維持
-                                   ★ IsHitTestVisible=False で選択・編集・クリックを禁止 -->
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                <!--
-                <DataGridTextColumn Header="変換元" Binding="{Binding SourcePath}" Width="2*">
-                    <DataGridTextColumn.CellStyle>
-                        <Style TargetType="DataGridCell">
-                            <Setter Property="FlowDirection" Value="RightToLeft"/>
-                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                            <Setter Property="VerticalContentAlignment" Value="Center"/>
-                        </Style>
-                    </DataGridTextColumn.CellStyle>
-
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="FlowDirection" Value="RightToLeft"/>
-                            <Setter Property="TextAlignment" Value="Left"/>
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
-                </DataGridTextColumn>
-                -->
-                
-                <!-- 結果（クリックでコピー） -->
-                <DataGridTemplateColumn Header="結果" Width="3*">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding ResultText}"
-                               Cursor="Hand"
-                               TextWrapping="NoWrap">
-                                <TextBlock.InputBindings>
-                                    <MouseBinding Gesture="LeftClick"
-                                          Command="{Binding DataContext.CopyResultCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                          CommandParameter="{Binding ResultText}"/>
-                                </TextBlock.InputBindings>
-                            </TextBlock>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-
-                <!-- 操作ボタン -->
-                <DataGridTemplateColumn Header="操作" Width="60">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <Button Content="▶"
-                            Width="40" Height="22"
-                            Command="{Binding ActionCommand}"/>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-
-            </DataGrid.Columns>
-        </DataGrid>
-
+        </StackPanel>
 
     </Grid>
 </Window>

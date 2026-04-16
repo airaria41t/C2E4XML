@@ -1,6 +1,7 @@
 ﻿using ClosedXML.Excel;
 using DocumentFormat.OpenXml.Office2013.Drawing.ChartStyle;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
@@ -15,12 +16,25 @@ namespace C2E4XML
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
         private readonly Lock _procLock = new();
         private bool _isProcessing = false;
         private CancellationTokenSource? _cts;
+        private double _progressValue;
+        public double ProgressValue
+        {
+            get => _progressValue;
+            set
+            {
+                _progressValue = value;
+                OnPropertyChanged(nameof(ProgressValue));
+            }
+        }
 
+        public event PropertyChangedEventHandler? PropertyChanged;
+        private void OnPropertyChanged(string propertyName)
+    => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         public ObservableCollection<LogEntry> LogEntries { get; } = [];
         public ICommand CopyResultCommand { get; private set; }
 
@@ -39,14 +53,14 @@ namespace C2E4XML
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            InitializeForm();
+            //InitializeForm();
             //throw new NotImplementedException();
         }
 
         private void InitializeForm()
         {
             txtFilePath.Text = "ファイルパスを入力";
-            txtLog.Text = "結果が表示されます。";
+            //txtLog.Text = "結果が表示されます。";
             txtStatus.Text = "";
             txtResultMark.Text = "";
             txtResultMarkB.Text = "";
@@ -426,7 +440,7 @@ namespace C2E4XML
                 // ⑤ Excel 出力
                 //
                 status.Report("Excel 出力中...");
-                ExcelExporter excel = new();
+                _ = new ExcelExporter();
                 ExcelExporter.Export(excelPath, loader.ReadData);
 
             }
@@ -463,7 +477,7 @@ namespace C2E4XML
                 // ⑥ Excel 出力
                 //
                 status.Report("Excel 出力中...");
-                ExcelExporter excel = new();
+                _ = new ExcelExporter();
                 ExcelExporter.Export(excelPath, tables);
 
             }
@@ -479,17 +493,6 @@ namespace C2E4XML
         {
 
         }
-
-        private void BtnExcel_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void BtnCopy_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
 
         #endregion
 
