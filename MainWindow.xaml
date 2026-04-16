@@ -23,66 +23,53 @@
         </Grid.RowDefinitions>
 
         <!--ファイルパス設定-->
-        <!--
-        <GroupBox x:Name="grpFilePath" Header="  ファイルパス"
-                  HorizontalAlignment="Center" VerticalAlignment="Top" 
-                  Height="110" Width="500" 
-                  Margin="0,15,0,0"
-                  Background="{DynamicResource ControlFillColorDefaultBrush}">
-        -->
         <!--テキストボックス・ボタン並び整理-->
         <StackPanel Grid.Row="0"
-            Orientation="Vertical"
-                    VerticalAlignment="Top" Margin="0,15"
-                    HorizontalAlignment="Center"
-                    Height="75" 
+                    Orientation="Vertical"
+                    VerticalAlignment="Top" HorizontalAlignment="Center"
+                    Margin="0,15" Height="75" 
                     Background="{DynamicResource ControlFillColorDefaultBrush}">
-            <TextBox
-                Width="130" FontSize="15"
-                VerticalAlignment="Top" HorizontalAlignment="Left"
-                IsReadOnly="True" IsHitTestVisible="False" 
-                BorderThickness="0" Background="Transparent" 
-                Text="ファイルパス" />
+            <TextBox Text="ファイルパス" FontSize="15"
+                     Width="130" BorderThickness="0" Background="Transparent" 
+                     VerticalAlignment="Top" HorizontalAlignment="Left"
+                     IsReadOnly="True" IsHitTestVisible="False" />
             <StackPanel Orientation="Horizontal"
                         Height="40"
-                        VerticalAlignment="Top"
-                        HorizontalAlignment="Center">
+                        VerticalAlignment="Top" HorizontalAlignment="Center">
                 <!--パス入力欄-->
-                <TextBox x:Name="txtFilePath" Text="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                <TextBox x:Name="txtFilePath" Text="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" FontSize="16"
                          VerticalContentAlignment="Top"
+                         VerticalAlignment="Top"
                          Height="30" Width="420" Margin="5,0,0,0" 
                          AllowDrop="True"
-                         FontSize="16"
-                         VerticalAlignment="Top"
                          PreviewDragOver="TxtFilePath_PreviewDragOver" 
                          PreviewDrop="TxtFilePath_PreviewDrop" />
                 <!--オープンファイルダイアログ表示-->
-                <Button x:Name="btnFilePath" Content="&#xE8A5;" 
+                <Button x:Name="btnFilePath" Content="&#xE8A5;" FontSize="18"
                         FontFamily="{StaticResource SymbolThemeFontFamily}"
-                        Height="33" Width="40" Margin="5,0,5,0"
-                        Cursor="Hand" FontSize="18"
-                        HorizontalAlignment="Left" VerticalAlignment="Top"
                         HorizontalContentAlignment="Left"
                         Style="{DynamicResource AccentButtonStyle}" 
-                        ToolTip="ファイル設定" Click="BtnFilePath_Click"/>
+                        Cursor="Hand" 
+                        Height="33" Width="40" Margin="5,0,5,0"
+                        HorizontalAlignment="Left" VerticalAlignment="Top"
+                        ToolTip="ファイル設定"
+                        Click="BtnFilePath_Click"/>
             </StackPanel>
         </StackPanel>
 
-
-        <!--    
-    </GroupBox>
-        -->
         <StackPanel Grid.Row="1"
-            Orientation="Horizontal" Height="50" VerticalAlignment="Top" Margin="0">
+                    Orientation="Horizontal" 
+                    VerticalAlignment="Top"
+                    Height="50" Margin="0">
+            
             <!--トグル-->
-            <TextBlock Text="詳細"
-               VerticalAlignment="Center"
-               Margin="100,0,0,0"
-               FontSize="15"/>
+            <TextBlock Text="詳細" FontSize="15"
+                       VerticalAlignment="Center"
+                       Margin="100,0,0,0" />
             <ToggleButton x:Name="tglDetailOut" 
                           Width="40" Height="20" Margin="3,0,0,0" 
                           HorizontalAlignment="Left" VerticalAlignment="Center" 
-                          IsChecked="True">
+                          IsChecked="True" >
                 <ToggleButton.Template>
                     <ControlTemplate TargetType="ToggleButton">
                         <Grid>
@@ -102,74 +89,72 @@
             </ToggleButton>
 
             <!--変換ボタン-->
-            <Button x:Name="btnConvert" Height="32" Width="100" Margin="200,0,0,0" VerticalContentAlignment="Top"
-                HorizontalAlignment="Right" VerticalAlignment="Center"
-                Cursor="Hand" 
-                Style="{DynamicResource AccentButtonStyle}" 
-                Content="&#xEE4A;" 
-                FontSize="20" FontFamily="{StaticResource SymbolThemeFontFamily}" 
-                ToolTip="変換" Click="BtnConvert_Click" />
-            <TextBox x:Name="txtResultMarkB" IsReadOnly="True" IsHitTestVisible="False" Width="20" Height="20" FontSize="15"
-             BorderThickness="0" Background="Transparent" Text="✔" Padding="0" HorizontalContentAlignment="Right" 
-                     VerticalAlignment="Center" Margin="0,10,0,0" Foreground="SeaGreen"/>
-
-            <!--
-            <TextBlock Text="✔️" FontSize="20" Foreground="SeaGreen" VerticalAlignment="Center"/>
-            <TextBlock Text="❌" FontSize="20" Foreground="Crimson"/>
-            -->
+            <Button x:Name="btnConvert" Content="&#xEE4A;"
+                    FontSize="20" FontFamily="{StaticResource SymbolThemeFontFamily}" 
+                    VerticalContentAlignment="Top"
+                    Cursor="Hand" 
+                    Style="{DynamicResource AccentButtonStyle}" 
+                    Height="32" Width="100" Margin="200,0,0,0" 
+                    HorizontalAlignment="Right" VerticalAlignment="Center"
+                    ToolTip="変換"
+                    Click="BtnConvert_Click" />
+            <TextBox x:Name="txtResultMarkB" Text="✔" FontSize="15"
+                     HorizontalContentAlignment="Right"
+                     Width="20" Height="20" Margin="0,10,0,0" Padding="0"
+                     VerticalAlignment="Center"
+                     BorderThickness="0" Background="Transparent" Foreground="SeaGreen"
+                     IsReadOnly="True" IsHitTestVisible="False" />
         </StackPanel>
 
         <!--結果-->
         <!--進捗ステータス-->
         <StackPanel Grid.Row="2"
-            x:Name="stkProgressBar" Orientation="Vertical" Height="30" VerticalAlignment="Bottom" Visibility="Visible" Margin="0">
+                    x:Name="stkProgressBar"
+                    Orientation="Vertical"
+                    Height="30" Margin="0"
+                    VerticalAlignment="Bottom" 
+                    Visibility="Visible" >
             <StackPanel Orientation="Horizontal" Height="25">
-                <TextBox x:Name="txtResultMark" 
-                         IsReadOnly="True" IsHitTestVisible="False" 
-                         Width="20" Height="25" FontSize="12"
+                <TextBox x:Name="txtResultMark" Text="✔" 
+                         FontSize="12"
+                         HorizontalContentAlignment="Right" VerticalContentAlignment="Center"
+                         Width="20" Height="25" Padding="0"
                          BorderThickness="0" 
                          Background="Transparent" 
-                         Text="✔" 
-                         Padding="0" 
-                         HorizontalContentAlignment="Right" 
+                         Foreground="SeaGreen"
+                         IsReadOnly="True" IsHitTestVisible="False" />
+                <TextBox x:Name="txtStatus" Text="あああtest..."
+                         FontSize="10"
                          VerticalContentAlignment="Center"
-                         Foreground="SeaGreen"/>
-                <TextBox x:Name="txtStatus" 
+                         Width="150" Height="25" Padding="0,4,0,0"
+                         BorderThickness="0"
+                         Background="Transparent" 
+                         IsReadOnly="True" IsHitTestVisible="False" />
+                <TextBox x:Name="txtResult" Text="{Binding LastResultMessage}"
+                         FontSize="10"
+                         VerticalContentAlignment="Center" HorizontalContentAlignment="Right"
+                         Width="320" Height="25" Padding="0,4,0,0" 
                          IsReadOnly="True" IsHitTestVisible="False" 
-                         Width="150" Height="25" FontSize="10"
                          BorderThickness="0" 
                          Background="Transparent" 
-                         Padding="0,4,0,0" 
-                         VerticalContentAlignment="Center"
-                         Text="あああtest..." />
-                <TextBox x:Name="txtResult" 
-                         IsReadOnly="True" IsHitTestVisible="False" 
-                         Width="320" Height="25" FontSize="10"
-                         BorderThickness="0" 
-                         Background="Transparent" 
-                         Padding="0,4,0,0" 
-                         VerticalContentAlignment="Center"
-                         HorizontalContentAlignment="Right"
-                         HorizontalAlignment="Right"
-                         Text="あああtest..." />
+                         HorizontalAlignment="Right" />
 
                 <!--エクスプローラ表示-->
-                <Button x:Name="btnExplorer" Width="40" Height="25" 
-                            Cursor="Hand"
-                            Style="{DynamicResource AccentButtonStyle}"
-                            Content="&#xEC50;" 
-                            FontSize="13" FontFamily="{StaticResource SymbolThemeFontFamily}" 
+                <Button x:Name="btnExplorer" Content="&#xE8A1;" 
+                        FontSize="13" FontFamily="{StaticResource SymbolThemeFontFamily}" 
                         VerticalContentAlignment="Top"
-                        VerticalAlignment="Bottom"
-                        HorizontalAlignment="Right"
-                            ToolTip="エクスプローラ" Click="BtnExplorer_Click"/>
+                        Cursor="Hand"
+                        Style="{DynamicResource AccentButtonStyle}"
+                        Width="40" Height="25" 
+                        VerticalAlignment="Bottom" HorizontalAlignment="Right"
+                        ToolTip="Excel起動"
+                        Click="BtnExplorer_Click"/>
             </StackPanel>
             <!--変換進捗バー-->
             <ProgressBar x:Name="prgConvert" 
-                     Height="5" Minimum="0" Maximum="100" VerticalAlignment="Bottom"
-                     Value="{Binding ProgressValue}"/>
-
+                         Height="5" 
+                         VerticalAlignment="Bottom"
+                         Minimum="0" Maximum="100" Value="{Binding ProgressValue}"/>
         </StackPanel>
-
     </Grid>
 </Window>

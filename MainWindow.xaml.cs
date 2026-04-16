@@ -21,6 +21,34 @@ namespace C2E4XML
         private readonly Lock _procLock = new();
         private bool _isProcessing = false;
         private CancellationTokenSource? _cts;
+
+        // ★ ステータスバー表示用（成功パス／失敗メッセージ）
+        private string _lastResultMessage = "";
+        public string LastResultMessage
+        {
+            get => _lastResultMessage;
+            set
+            {
+                _lastResultMessage = value;
+                OnPropertyChanged(nameof(LastResultMessage));
+            }
+        }
+
+        // ★ ステータスバー横ボタンのアイコン（仮）
+        private string _resultButtonIcon = "";
+        public string ResultButtonIcon
+        {
+            get => _resultButtonIcon;
+            set
+            {
+                _resultButtonIcon = value;
+                OnPropertyChanged(nameof(ResultButtonIcon));
+            }
+        }
+
+        // ★ ステータスバー横ボタンの動作
+        public ICommand? ResultActionCommand { get; private set; }
+
         private double _progressValue;
         public double ProgressValue
         {
@@ -31,58 +59,64 @@ namespace C2E4XML
                 OnPropertyChanged(nameof(ProgressValue));
             }
         }
-
         public event PropertyChangedEventHandler? PropertyChanged;
         private void OnPropertyChanged(string propertyName)
-    => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        public ObservableCollection<LogEntry> LogEntries { get; } = [];
-        public ICommand CopyResultCommand { get; private set; }
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+        //public ObservableCollection<LogEntry> LogEntries { get; } = [];
+        
+        public ICommand? CopyResultCommand { get; private set; }
 
         public MainWindow()
         {
             InitializeComponent();
             Loaded += MainWindow_Loaded;
 
-            CopyResultCommand = new RelayCommand<string>(text =>
-            {
-                Clipboard.SetText(text);
-            });
+            //CopyResultCommand = new RelayCommand<string>(text =>
+            //{
+            //    Clipboard.SetText(text);
+            //});
 
             DataContext = this;
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            //InitializeForm();
-            //throw new NotImplementedException();
+            InitializeForm();
         }
 
         private void InitializeForm()
         {
             txtFilePath.Text = "ファイルパスを入力";
-            //txtLog.Text = "結果が表示されます。";
-            txtStatus.Text = "";
+            txtStatus.Text = "準備完了";
             txtResultMark.Text = "";
             txtResultMarkB.Text = "";
-            stkProgressBar.Visibility = Visibility.Hidden;
+            txtResult.Text = "";
+            prgConvert.Visibility = Visibility.Hidden;
         }
 
         private void InitializeProgressBar(bool flag)
         {
             if (flag)
             {
-                stkProgressBar.Visibility = Visibility.Visible;
-                prgConvert.Minimum = 0;
-                prgConvert.Maximum = 100;
-                prgConvert.Value = 0;
+                prgConvert.Visibility = Visibility.Visible;
+                ProgressValue = 0;
             }
             else
             {
-                stkProgressBar.Visibility = Visibility.Hidden;
+                prgConvert.Visibility = Visibility.Hidden;
             }
-            txtStatus.Text = "";
+            txtStatus.Text = "準備完了";
             txtResultMark.Text = "";
             txtResultMarkB.Text = "";
+        }
+
+        // ★ コピー成功時の一時表示
+        private async void ShowCopyToast()
+        {
+            txtStatus.Text = "コピーしました";
+            await Task.Delay(1500);
+            txtStatus.Text = "準備完了";
         }
 
         #region イベント
@@ -164,24 +198,6 @@ namespace C2E4XML
                     return false;
                 }
 
-                //// Excel 出力先パス設定
-                //string excelPath = System.IO.Path.ChangeExtension(path, ".xlsx");
-                //// 既に同名の Excel ファイルが存在する場合は上書き確認
-                //if (File.Exists(excelPath))
-                //{
-                //    var result =
-                //        MessageBox.Show(
-                //            $"同名の Excel ファイルが既に存在します。\n上書きしますか？\n\n{excelPath}",
-                //            "確認",
-                //            MessageBoxButton.YesNo,
-                //            MessageBoxImage.Question
-                //            );
-                //    if (result != MessageBoxResult.Yes)
-                //    {
-                //        return;
-                //    }
-                //}
-
                 // ProgressBar 初期化
                 InitializeProgressBar(true);
 
@@ -189,7 +205,7 @@ namespace C2E4XML
                 _cts = new CancellationTokenSource();
                 var token = _cts.Token;
 
-                var progress = new Progress<int>(v => prgConvert.Value = v);
+                var progress = new Progress<int>(v => ProgressValue = v);
                 var status = new Progress<string>(msg => txtStatus.Text = msg);
 
                 bool bDetail = tglDetailOut.IsChecked == true;
@@ -201,43 +217,31 @@ namespace C2E4XML
                         excelPath => {
                             Application.Current.Dispatcher.Invoke(() =>
                             {
-                                // 成功ログ
-                                LogEntries.Insert(0, new LogEntry {
-                                    SourcePath = path,
-                                    IsSuccess = true,
-                                    ResultText = excelPath,
-                                    ActionCommand = new RelayCommand(() => {
-                                        Process.Start(new ProcessStartInfo(excelPath) { UseShellExecute = true });
-                                    })
+                                // ★ 成功時：ステータスバーに表示
+                                LastResultMessage = excelPath;
+                                ResultButtonIcon = "?"; // 仮アイコン
+
+                                // ★ 成功時：コピー可能
+                                CopyResultCommand = new RelayCommand(() =>
+                                {
+                                    Clipboard.SetText(excelPath);
+                                    ShowCopyToast();
                                 });
+                                // ★ 成功時：ファイル実行
+                                ResultActionCommand = new RelayCommand(() =>
+                                {
+                                    Process.Start(new ProcessStartInfo(excelPath)
+                                    {
+                                        UseShellExecute = true
+                                    });
+                                });
+
                             });
                         }, token);
                 });
 
                 MessageBox.Show("Excel 出力が完了しました。", "完了", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                //// XML ロード
-                //XmlLoader loader = new(path);
-                //loader.LoadXml();
-
-                //bool bDetail = tglDetailOut.IsChecked == true;
-                //if (bDetail)
-                //{
-                //    // テーブル構築
-                //    XmlTableBuilder builder = new(loader.ReadData);
-                //    var tables = builder.Build();
-
-                //    // Excel 出力
-                //    //ExcelExporter excel = new(tables);
-                //    ExcelExporter excel = new();
-                //    excel.Export(excelPath, tables);
-                //}
-                //else
-                //{
-                //    // Excel 出力
-                //    ExcelExporter excel = new();
-                //    excel.Export(excelPath, loader.ReadData);
-                //}
                 return true;
             }
             catch (OperationCanceledException ex)
@@ -245,15 +249,16 @@ namespace C2E4XML
                 string log = string.IsNullOrEmpty(ex.Message) ? "キャンセルされました。" : ex.Message;
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    LogEntries.Insert(0, new LogEntry
+                    LastResultMessage = log;
+                    ResultButtonIcon = "!"; // 仮アイコン
+
+                    // ★ 失敗時：コピー不可
+                    CopyResultCommand = null;
+
+                    ResultActionCommand = new RelayCommand(() =>
                     {
-                        SourcePath = txtFilePath.Text,
-                        IsSuccess = false,
-                        ResultText = log,
-                        ActionCommand = new RelayCommand(() =>
-                        {
-                            MessageBox.Show(log, "キャンセル", MessageBoxButton.OK, MessageBoxImage.Error);
-                        })
+                        MessageBox.Show(log, "キャンセル",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
                     });
                 });
                 return false;
@@ -264,15 +269,14 @@ namespace C2E4XML
                 string log = "Excel ファイルが開いているため、上書きできません。閉じてから再実行してください。";
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    LogEntries.Insert(0, new LogEntry
+                    LastResultMessage = log;
+                    ResultButtonIcon = "!";
+                    CopyResultCommand = null;
+
+                    ResultActionCommand = new RelayCommand(() =>
                     {
-                        SourcePath = txtFilePath.Text,
-                        IsSuccess = false,
-                        ResultText = log,
-                        ActionCommand = new RelayCommand(() =>
-                        {
-                            MessageBox.Show(log, "変換失敗", MessageBoxButton.OK, MessageBoxImage.Error);
-                        })
+                        MessageBox.Show(log, "変換失敗",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
                     });
                 });
                 MessageBox.Show(log, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -282,15 +286,14 @@ namespace C2E4XML
             {
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    LogEntries.Insert(0, new LogEntry
+                    LastResultMessage = ex.Message;
+                    ResultButtonIcon = "!";
+                    CopyResultCommand = null;
+
+                    ResultActionCommand = new RelayCommand(() =>
                     {
-                        SourcePath = txtFilePath.Text,
-                        IsSuccess = false,
-                        ResultText = ex.Message,
-                        ActionCommand = new RelayCommand(() =>
-                        {
-                            MessageBox.Show(ex.Message, "変換失敗", MessageBoxButton.OK, MessageBoxImage.Error);
-                        })
+                        MessageBox.Show(ex.Message, "変換失敗",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
                     });
                 });
 
@@ -326,6 +329,7 @@ namespace C2E4XML
                     txtResultMark.Foreground = new SolidColorBrush(Colors.SeaGreen);
                     txtResultMarkB.Text = "✔";
                     txtResultMarkB.Foreground = new SolidColorBrush(Colors.SeaGreen);
+                    txtResult.Text = LastResultMessage;
                 }
                 else
                 {
@@ -335,6 +339,7 @@ namespace C2E4XML
                     txtResultMark.Foreground = new SolidColorBrush(Colors.Crimson);
                     txtResultMarkB.Text = "✖";
                     txtResultMarkB.Foreground = new SolidColorBrush(Colors.Crimson);
+                    txtResult.Text = LastResultMessage;
                 }
                 StartClearResultTimer(TimeSpan.FromSeconds(3)); // 3秒後に消す
             }
@@ -489,9 +494,43 @@ namespace C2E4XML
             onSuccess(excelPath);
         }
 
+        // ★ クリック時の視覚効果用
+        private void TxtResult_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            txtResult.Opacity = 0.6;
+        }
+
+        private void TxtResult_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            txtResult.Opacity = 1.0;
+        }
+
+        private void TxtResult_MouseLeave(object sender, MouseEventArgs e)
+        {
+            txtResult.Opacity = 1.0;
+        }
+
+        // ★ エクスプローラボタン（Excel起動）
+        //   ResultActionCommand が設定されていればそれを使う
         private void BtnExplorer_Click(object sender, RoutedEventArgs e)
         {
-
+            if (ResultActionCommand != null && ResultActionCommand.CanExecute(null))
+            {
+                ResultActionCommand.Execute(null);
+            }
+            else if (!string.IsNullOrEmpty(LastResultMessage) && File.Exists(LastResultMessage))
+            {
+                // 念のためパスとして直接実行もフォールバック
+                Process.Start(new ProcessStartInfo(LastResultMessage)
+                {
+                    UseShellExecute = true
+                });
+            }
+            else
+            {
+                MessageBox.Show("実行可能なパスがありません。", "情報",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+            }
         }
 
         #endregion
