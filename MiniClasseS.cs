@@ -27,24 +27,6 @@ namespace C2E4XML
         public List<XmlDataNode> Children { get; set; } = [];
     }
 
-    public class LogEntry
-    {
-        public string? SourcePath { get; set; }
-        public bool IsSuccess { get; set; }
-        public string? ResultText { get; set; }   // 出力パス or 失敗原因
-        public ICommand? ActionCommand { get; set; }
-
-        // ✔ / ✖ を返すプロパティ
-        public string StatusIcon => IsSuccess ? "✔" : "✖";
-
-        public VerticalAlignment StatusVerticalAlignment
-    => IsSuccess ? VerticalAlignment.Top : VerticalAlignment.Center;
-
-        public FlowDirection ResultFlowDirection
-    => IsSuccess ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
-
-    }
-
     public class BoolToColorConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -59,21 +41,6 @@ namespace C2E4XML
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
             => throw new NotImplementedException();
     }
-
-    public class BoolToFlowDirectionConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            if (value is bool b && b)
-                return FlowDirection.RightToLeft;   // 成功時：右側（ファイル名）を見せる
-
-            return FlowDirection.LeftToRight;       // 失敗時：普通の左→右
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-            => throw new NotSupportedException();
-    }
-
 
     public class RelayCommand(Action execute, Func<bool>? canExecute = null) : ICommand
     {

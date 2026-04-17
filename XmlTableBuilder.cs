@@ -10,7 +10,6 @@
             var result = new Dictionary<string, List<Dictionary<string, string>>>();
 
             // ✔ config も必ず出力される（属性のみの 1 行表）
-            //AddAttributeTable("config", _root, result);
             AddAttributeTable(_root.Name, _root, result);
 
             // ✔ シートは「ルート直下のタグ」 → ここでは path の先頭要素になる
@@ -31,15 +30,7 @@
             var children = node.Children;
 
             // ✔ 属性・値・子がなくても表を出す（空表）
-            // ※ 下の条件と重複しているため不要
-            //if (node.Attributes.Count == 0 && children.Count == 0)
-            //{
-            //    AddEmptyTable(path, result);
-            //    return;
-            //}
-
             // ✔ 値が無い場合だけ空表を作る
-            // ※ 上の条件と意味がほぼ同じなのでこちらだけ残す
             if (node.Attributes.Count == 0 &&
                 children.Count == 0 &&
                 string.IsNullOrEmpty(node.Value))
@@ -57,16 +48,12 @@
 
             // 子ノードの構造を調べる
             var sameNameGroups = children.GroupBy(c => c.Name).ToList();
-            //bool hasSameNameGroup = sameNameGroups.Any(g => g.Count() > 1);
 
             // entry の兄弟まとめが可能なら structureGroups は無効化
-            //if (hasSameNameGroup)
             if (sameNameGroups.Any(g => g.Count() > 1))
             {
                 // ✔ 同じタグ名の兄弟（entry など）は 1 表にまとめる（行＝兄弟）
                 foreach (var g in sameNameGroups.Where(g => g.Count() > 1))
-                // ※ 下の条件は上と同じ意味なので不要
-                //foreach (var g in sameNameGroups.Where(g => g.Count() > 1 && g.Key == g.First().Name))
                 {
                     string tablePath = $"{path}.{g.Key}";
                     if (_created.Contains(tablePath)) continue;
@@ -91,23 +78,9 @@
                     result[tablePath] = rows;
 
                     // その子ノード配下は表にしない（重複防止）
-                    //return;   // ★★★ これが絶対に必要 ★★★
                     continue;
                 }
             }
-
-            /*
-            // ✔ flatten の列構造が同じ兄弟タグ（名前が異なる）を 1 表にまとめる（http）
-            // ※ 下でより条件を絞った structureGroups を定義しているため不要
-            var structureGroups = children
-                .GroupBy(c => GetSignature(c))
-                .Where(g =>
-                    g.Count() > 1 &&
-                    g.Select(x => x.Name).Distinct().Count() > 1 &&   // 名前が違う
-                    g.All(x => x.Children.Count > 0)                  // flatten 可能
-                )
-                .ToList();
-            */
 
             // structureGroups は「名前が異なる兄弟」ではなく
             // 「同じ親の子の中で構造が似ているもの」だけに限定する
@@ -121,13 +94,6 @@
                     !sameNameGroups.Any(sg => sg.Count() > 1)
                 )
                 .ToList();
-
-            //// ※ hasSameNameGroup が true のとき structureGroups は必ず無効化されるため
-            ////   この Clear() は実質的に重複処理
-            //if (hasSameNameGroup)
-            //{
-            //    //structureGroups.Clear(); // ← 無駄なのでコメントアウト
-            //}
 
             if (structureGroups.Count > 0)
             {
@@ -153,13 +119,7 @@
                 return;
             }
 
-            // ★★★ Address のような「属性 + 複数の異名子ノード」を 1 行表にする分岐 ★★★
-            //if (node.Attributes.Count > 0 &&
-            //    children.Count > 1 &&
-            //    children.GroupBy(c => c.Name).All(g => g.Count() == 1))
             // ★★★ 修正版：属性 + 子複数 → 1 行表（customer を正しく処理する）★★★
-            //if (node.Attributes.Count > 0 &&
-            //    children.Count > 1)
             if (node.Attributes.Count > 0 &&
     children.Count > 1 &&
     children.All(c => c.Children.Count == 0))   // ★ 追加：子が葉ノードのときだけ
@@ -265,13 +225,6 @@
 
             result[path] = [row];
         }
-
-        /*private string GetSignature(XmlDataNode node)
-        {
-            var childNames = node.Children.Select(c => c.Name).OrderBy(n => n);
-            var attrNames = node.Attributes.Keys.OrderBy(n => n);
-            return string.Join(",", childNames) + "|" + string.Join(",", attrNames);
-        }*/
 
         private static string GetSignature(XmlDataNode node)
         {

@@ -4,13 +4,6 @@ namespace C2E4XML
 {
     internal class ExcelExporter
     {
-        //private readonly Dictionary<string, List<Dictionary<string, string>>> _tables;
-
-        //public ExcelExporter( tables)
-        //{
-        //    _tables = tables;
-        //}
-
         public static void Export(string filePath, Dictionary<string, List<Dictionary<string, string>>> tables)
         {
             using var workbook = new XLWorkbook();
@@ -37,7 +30,6 @@ namespace C2E4XML
                     // ★ 追加：表タイトル行の背景色（ヘッダーより濃いグレー）
                     var titleRange = sheet.Range(currentRow, 1, currentRow, 1);
                     titleRange.Style.Fill.BackgroundColor = XLColor.Gray;   // ← 濃いグレー
-                    //titleRange.Style.Font.Bold = true;
 
                     currentRow++;
 
@@ -52,7 +44,6 @@ namespace C2E4XML
                         // ★ 追加：ヘッダー行のスタイル（背景グレー＋太字）
                         var headerRange = sheet.Range(currentRow, 1, currentRow, header.Count);
                         headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
-                        //headerRange.Style.Font.Bold = true;
 
                         currentRow++;
 
@@ -143,8 +134,6 @@ namespace C2E4XML
                 sheet.Cell(1, i + 1).Style.Fill.BackgroundColor =
                     (i % 2 == 0) ? XLColor.Gray : XLColor.DarkGray;
             }
-
-            //sheet.Cell(1, maxDepth + 1).Value = $"Level{maxDepth + 1}"; ;
         }
 
         private static void WriteBody(IXLWorksheet sheet, IEnumerable<FlattenedRow> rows)

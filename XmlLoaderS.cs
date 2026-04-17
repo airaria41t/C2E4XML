@@ -91,8 +91,6 @@ namespace C2E4XML
                         break;
 
                     case XmlNodeType.Text:
-                        //rslt.Value = child.Value?.Trim();
-                        //rslt.Value = child.Value;
                         // 空白・改行の Text ノードは無視する
                         if (!string.IsNullOrWhiteSpace(child.Value))
                             rslt.Value = child.Value.Trim();

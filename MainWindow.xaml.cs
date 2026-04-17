@@ -72,19 +72,10 @@ namespace C2E4XML
         private void OnPropertyChanged(string propertyName)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-        //public ObservableCollection<LogEntry> LogEntries { get; } = [];
-
-        //public ICommand? CopyResultCommand { get; private set; }
-
         public MainWindow()
         {
             InitializeComponent();
             Loaded += MainWindow_Loaded;
-
-            //CopyResultCommand = new RelayCommand<string>(text =>
-            //{
-            //    Clipboard.SetText(text);
-            //});
 
             DataContext = this;
         }
@@ -120,14 +111,6 @@ namespace C2E4XML
             txtStatus.Text = "準備完了";
             txtResultMark.Text = "";
             txtResultMarkB.Text = "";
-        }
-
-        // ★ コピー成功時の一時表示
-        private async void ShowCopyToast()
-        {
-            txtStatus.Text = "コピーしました";
-            await Task.Delay(1500);
-            txtStatus.Text = "準備完了";
         }
 
         #region イベント
@@ -191,9 +174,15 @@ namespace C2E4XML
                 if (sender is not TextBox tb) return;
                 tb.Text = path;
             }
-            catch
+            catch(Exception ex)
             {
-                // Drop 内で例外が出ると 2 回目以降 DragOver が壊れるため必須
+                // Drop 内で例外が外に出ると DragOver が壊れるためここで止める
+                MessageBox.Show(
+                    ex.Message,
+                    "Drop エラー",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
             }
         }
 
@@ -231,14 +220,6 @@ namespace C2E4XML
                             {
                                 // ★ 成功時：ステータスバーに表示
                                 LastResultMessage = excelPath;
-                                //ResultButtonIcon = "?"; // 仮アイコン
-
-                                // ★ 成功時：コピー可能
-                                //CopyResultCommand = new RelayCommand(() =>
-                                //{
-                                //    Clipboard.SetText(excelPath);
-                                //    ShowCopyToast();
-                                //});
                                 // ★ 成功時：ファイル実行
                                 ResultActionCommand = new RelayCommand(() =>
                                 {
@@ -262,10 +243,6 @@ namespace C2E4XML
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     LastResultMessage = log;
-                    //ResultButtonIcon = "!"; // 仮アイコン
-
-                    // ★ 失敗時：コピー不可
-                    //CopyResultCommand = null;
 
                     ResultActionCommand = new RelayCommand(() =>
                     {
@@ -284,8 +261,6 @@ namespace C2E4XML
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     LastResultMessage = log.Replace("\n", "");
-                    //ResultButtonIcon = "!";
-                    //CopyResultCommand = null;
 
                     ResultActionCommand = new RelayCommand(() =>
                     {
@@ -301,8 +276,6 @@ namespace C2E4XML
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     LastResultMessage = ex.Message;
-                    //ResultButtonIcon = "!";
-                    //CopyResultCommand = null;
 
                     ResultActionCommand = new RelayCommand(() =>
                     {
@@ -343,7 +316,6 @@ namespace C2E4XML
                     txtResultMark.Foreground = new SolidColorBrush(Colors.SeaGreen);
                     txtResultMarkB.Text = "✔";
                     txtResultMarkB.Foreground = new SolidColorBrush(Colors.SeaGreen);
-                    //txtResult.Text = LastResultMessage;
                     ResultButtonIcon = "\uE8A1"; // アイコンを反映
                     ResultButtonToolTip = "Excel起動";
                 }
@@ -355,7 +327,6 @@ namespace C2E4XML
                     txtResultMark.Foreground = new SolidColorBrush(Colors.Crimson);
                     txtResultMarkB.Text = "✖";
                     txtResultMarkB.Foreground = new SolidColorBrush(Colors.Crimson);
-                    //txtResult.Text = LastResultMessage;
                     ResultButtonIcon = "\uE783"; // アイコンを反映
                     ResultButtonToolTip = "メッセージ表示";
                 }
@@ -541,13 +512,6 @@ namespace C2E4XML
 
         #endregion
 
-        //private void CopyBorder_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        //{
-        //    if (!string.IsNullOrWhiteSpace(LastResultMessage))
-        //    {
-        //        Clipboard.SetText(LastResultMessage);
-        //    }
-        //}
         private async void CopyBorder_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(LastResultMessage))
