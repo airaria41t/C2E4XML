@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:C2E4XML"
         mc:Ignorable="d"
         Title="Convert" Icon="/とけちゃう猫さん.png"
-        Height="250" Width="550" 
+        Height="225" Width="550" 
         ResizeMode="CanMinimize" WindowStyle="SingleBorderWindow" Loaded="MainWindow_Loaded">
     <Window.Resources>
         <local:BoolToColorConverter x:Key="BoolToColorConverter"/>
@@ -16,7 +16,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <!-- 上部 -->
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="50"/>
             <!-- 中央 -->
             <RowDefinition Height="Auto"/>
             <!-- 下部 -->
@@ -78,7 +78,7 @@
             <!--トグル-->
             <TextBlock Text="詳細" FontSize="15"
                        VerticalAlignment="Center"
-                       Margin="100,0,0,0" />
+                       Margin="80,0,0,0" />
             <ToggleButton x:Name="tglDetailOut" 
                           Width="40" Height="20" Margin="3,0,0,0" 
                           HorizontalAlignment="Left" VerticalAlignment="Center" 
@@ -108,17 +108,19 @@
                     VerticalContentAlignment="Top"
                     Cursor="Hand" 
                     Style="{DynamicResource AccentButtonStyle}" 
-                    Height="32" Width="100" Margin="200,0,0,0" 
+                    Height="32" Width="100" Margin="220,0,0,0" 
                     HorizontalAlignment="Right" VerticalAlignment="Center"
                     IsTabStop="False"
                     ToolTip="変換"
                     Click="BtnConvert_Click" />
-            <TextBox x:Name="txtResultMarkB" Text="✔" FontSize="15"
+            <!--
+            <TextBox x:Name="txtResultMarkB" Text="{Binding LastResultMark}" FontSize="15"
                      HorizontalContentAlignment="Right"
                      Width="20" Height="20" Margin="0,10,0,0" Padding="0"
                      VerticalAlignment="Center"
-                     BorderThickness="0" Background="Transparent" Foreground="SeaGreen"
+                     BorderThickness="0" Background="Transparent" Foreground="{Binding LastResultMarkColor}"
                      IsReadOnly="True" IsHitTestVisible="False" IsTabStop="False"/>
+            -->
         </StackPanel>
 
         <!--結果-->
@@ -128,17 +130,17 @@
                     Orientation="Vertical"
                     Height="30" Margin="0"
                     VerticalAlignment="Bottom" 
-                    Visibility="Visible" >
-            <StackPanel Orientation="Horizontal" Height="25">
-                <TextBox x:Name="txtResultMark" Text="✔" 
+                    Visibility="Visible" Background="{DynamicResource ControlFillColorDefaultBrush}">
+            <StackPanel Orientation="Horizontal" Height="25" >
+                <TextBox x:Name="txtResultMark" Text="{Binding LastResultMark}" 
                          FontSize="12"
                          HorizontalContentAlignment="Right" VerticalContentAlignment="Center"
                          Width="20" Height="25" Padding="0"
                          BorderThickness="0" 
                          Background="Transparent" 
-                         Foreground="SeaGreen"
+                         Foreground="{Binding LastResultMarkColor}"
                          IsReadOnly="True" IsHitTestVisible="False" IsTabStop="False"/>
-                <TextBox x:Name="txtStatus" Text="あああtest..."
+                <TextBox x:Name="txtStatus" Text="{Binding StatusText}"
                          FontSize="10"
                          VerticalContentAlignment="Center"
                          Width="150" Height="25" Padding="0,4,0,0"
@@ -146,8 +148,8 @@
                          Background="Transparent" 
                          IsReadOnly="True" IsHitTestVisible="False" IsTabStop="False"/>
                 <Border Background="Transparent"
-        MouseLeftButtonDown="CopyBorder_MouseLeftButtonDown"
-        Cursor="Hand">
+                        Cursor="Hand"
+                        MouseLeftButtonDown="CopyBorder_MouseLeftButtonDown" >
                     <TextBox x:Name="txtResult" Text="{Binding LastResultMessage}"
                          FontSize="10"
                          VerticalContentAlignment="Center" HorizontalContentAlignment="Right"

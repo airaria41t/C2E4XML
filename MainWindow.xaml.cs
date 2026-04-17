@@ -19,7 +19,53 @@ namespace C2E4XML
         private bool _isProcessing = false;
         private CancellationTokenSource? _cts;
 
-        // ★ ステータスバー表示用（成功パス／失敗メッセージ）
+        private double _progressValue;
+        public double ProgressValue
+        {
+            get => _progressValue;
+            set
+            {
+                _progressValue = value;
+                OnPropertyChanged(nameof(ProgressValue));
+            }
+        }
+
+        private string _statusText = "";
+        public string StatusText
+        {
+            get => _statusText;
+            set
+            {
+                _statusText = value;
+                OnPropertyChanged(nameof(StatusText));
+            }
+        }
+
+
+        private string _lastResultMark = "";
+        public string LastResultMark
+        {
+            get => _lastResultMark;
+            set
+            {
+                _lastResultMark = value;
+                OnPropertyChanged(nameof(LastResultMark));
+            }
+        }
+
+        private Brush _lastResultMarkColor = Brushes.SeaGreen;
+        public Brush LastResultMarkColor
+        {
+            get => _lastResultMarkColor;
+            set
+            {
+                _lastResultMarkColor = value;
+                OnPropertyChanged(nameof(LastResultMarkColor));
+            }
+        }
+
+
+        // ステータスバー表示用（成功パス／失敗メッセージ）
         private string _lastResultMessage = "";
         public string LastResultMessage
         {
@@ -31,7 +77,7 @@ namespace C2E4XML
             }
         }
 
-        // ★ ステータスバー横ボタンのアイコン（仮）
+        // ステータスバー横ボタンのアイコン
         private string _resultButtonIcon = "";
         public string ResultButtonIcon
         {
@@ -43,7 +89,7 @@ namespace C2E4XML
             }
         }
 
-        // ★ ステータスバー横ボタンのツールチップ（仮）
+        // ステータスバー横ボタンのツールチップ
         private string _resultButtonToolTip = "";
         public string ResultButtonToolTip
         {
@@ -56,19 +102,10 @@ namespace C2E4XML
         }
 
 
-        // ★ ステータスバー横ボタンの動作
+        // ステータスバー横ボタンの動作
         public ICommand? ResultActionCommand { get; private set; }
 
-        private double _progressValue;
-        public double ProgressValue
-        {
-            get => _progressValue;
-            set
-            {
-                _progressValue = value;
-                OnPropertyChanged(nameof(ProgressValue));
-            }
-        }
+
         public event PropertyChangedEventHandler? PropertyChanged;
         private void OnPropertyChanged(string propertyName)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -91,10 +128,10 @@ namespace C2E4XML
         private void InitializeForm()
         {
             txtFilePath.Text = "ファイルパスを入力";
-            txtStatus.Text = "準備完了";
-            txtResultMark.Text = "";
-            txtResultMarkB.Text = "";
-            txtResult.Text = "";
+            StatusText = "ファイルパスを入力";
+            LastResultMark = "";
+            //txtResultMarkB.Text = "";
+            LastResultMessage = "";
             prgConvert.Visibility = Visibility.Hidden;
             btnExplorer.Visibility = Visibility.Hidden;
             txtCheck.Visibility = Visibility.Hidden;
@@ -107,14 +144,15 @@ namespace C2E4XML
                 prgConvert.Visibility = Visibility.Visible;
                 ProgressValue = 0;
                 btnExplorer.Visibility = Visibility.Hidden;
+                LastResultMessage = "";
             }
             else
             {
                 prgConvert.Visibility = Visibility.Hidden;
             }
-            txtStatus.Text = "準備完了";
-            txtResultMark.Text = "";
-            txtResultMarkB.Text = "";
+            StatusText = "準備完了";
+            LastResultMark = "";
+            //txtResultMarkB.Text = "";
         }
         #endregion
 
@@ -206,14 +244,14 @@ namespace C2E4XML
                     _isProcessing = true;
                 }
                 // ファイルパスの妥当性確認
-                //string path = txtFilePath.Text;
-                //if (string.IsNullOrEmpty(path) || !File.Exists(path))
                 if (!PathChecker(txtFilePath.Text, false))
                 {
                     MessageBox.Show("有効なファイルパスを入力してください。", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
-                    txtStatus.Text = "パスエラー";
-                    txtResultMark.Text = "✖";
-                    txtResultMark.Foreground = new SolidColorBrush(Colors.Crimson);
+                    StatusText = "パスエラー";
+                    //txtResultMark.Text = "✖";
+                    LastResultMark = "✖";
+                    //txtResultMark.Foreground = new SolidColorBrush(Colors.Crimson);
+                    LastResultMarkColor = new SolidColorBrush(Colors.Crimson);
                     return;
                 }
 
@@ -222,22 +260,22 @@ namespace C2E4XML
                 if (success)
                 {
                     // 成功時の処理（必要に応じて追加）
-                    txtStatus.Text = "変換成功";
-                    txtResultMark.Text = "✔";
-                    txtResultMark.Foreground = new SolidColorBrush(Colors.SeaGreen);
-                    txtResultMarkB.Text = "✔";
-                    txtResultMarkB.Foreground = new SolidColorBrush(Colors.SeaGreen);
+                    StatusText = "変換成功";
+                    LastResultMark = "✔";
+                    LastResultMarkColor = new SolidColorBrush(Colors.SeaGreen);
+                    //txtResultMarkB.Text = "✔";
+                    //txtResultMarkB.Foreground = new SolidColorBrush(Colors.SeaGreen);
                     ResultButtonIcon = "\uE8A1"; // アイコンを反映
                     ResultButtonToolTip = "Excel起動";
                 }
                 else
                 {
                     // 失敗時の処理（必要に応じて追加）
-                    txtStatus.Text = "変換失敗";
-                    txtResultMark.Text = "✖";
-                    txtResultMark.Foreground = new SolidColorBrush(Colors.Crimson);
-                    txtResultMarkB.Text = "✖";
-                    txtResultMarkB.Foreground = new SolidColorBrush(Colors.Crimson);
+                    StatusText = "変換失敗";
+                    LastResultMark = "✖";
+                    LastResultMarkColor = new SolidColorBrush(Colors.Crimson);
+                    //txtResultMarkB.Text = "✖";
+                    //txtResultMarkB.Foreground = new SolidColorBrush(Colors.Crimson);
                     ResultButtonIcon = "\uE783"; // アイコンを反映
                     ResultButtonToolTip = "メッセージ表示";
                 }
@@ -251,8 +289,8 @@ namespace C2E4XML
             {
                 // ここで例外を完全に吸収
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
-                txtResultMark.Text = "✖";
-                txtResultMark.Foreground = new SolidColorBrush(Colors.Crimson);
+                LastResultMark = "✖";
+                LastResultMarkColor = new SolidColorBrush(Colors.Crimson);
             }
             finally
             {
@@ -269,7 +307,9 @@ namespace C2E4XML
         {
             if (string.IsNullOrWhiteSpace(LastResultMessage))
                 return;
-
+            if (!File.Exists(LastResultMessage))
+                return;
+                            
             // クリップボードへコピー
             Clipboard.SetText(LastResultMessage);
 

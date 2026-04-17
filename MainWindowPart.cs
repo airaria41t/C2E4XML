@@ -34,7 +34,7 @@ namespace C2E4XML
                 var token = _cts.Token;
 
                 var progress = new Progress<int>(v => ProgressValue = v);
-                var status = new Progress<string>(msg => txtStatus.Text = msg);
+                var status = new Progress<string>(msg => StatusText = msg);
 
                 bool bDetail = tglDetailOut.IsChecked == true;
 
@@ -249,31 +249,13 @@ namespace C2E4XML
             onSuccess(excelPath);
         }
 
-        private async void CopyBorder_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            if (string.IsNullOrWhiteSpace(LastResultMessage))
-                return;
-
-            // クリップボードへコピー
-            Clipboard.SetText(LastResultMessage);
-
-            // クリック視覚効果（Opacity を一瞬下げる）
-            var border = sender as Border;
-            border?.Opacity = 0.5;
-            await Task.Delay(120);
-            border?.Opacity = 1.0;
-
-            // 一時メッセージ表示
-            await ShowCopiedMessageAsync();
-        }
-
         private async Task ShowCopiedMessageAsync()
         {
             string original = LastResultMessage;
 
-            txtResult.Text = "コピーしました";
+            LastResultMessage = "コピーしました";
             await Task.Delay(1500); // 1.5秒表示
-            txtResult.Text = original;
+            LastResultMessage = original;
         }
 
         private bool PathChecker(string path, bool flag = true)
@@ -285,31 +267,16 @@ namespace C2E4XML
                 if (flag)
                 {
                     chk.Visibility = Visibility.Hidden;
+                    StatusText = "ファイルパスを入力";
                     return true;
                 }
-                checker = true;
-                //if (flag)
-                //{
-                //    checker = false;
-                //}
-                //else
-                //{
-                //    checker = true;
-                //}
+                checker = false;
             }
             else if (!File.Exists(path))
             {
                 checker = false;
-                //chk.Visibility = Visibility.Visible;
-                //chk.Text = "✖";
-                //chk.Foreground = new SolidColorBrush(Colors.Crimson);
-                //return true;
             } else {
                 checker = true;
-                //chk.Visibility = Visibility.Visible;
-                //chk.Text = "✔";
-                //chk.Foreground = new SolidColorBrush(Colors.SeaGreen);
-                //return false;
             }
 
             if (checker)
@@ -317,6 +284,7 @@ namespace C2E4XML
                 chk.Visibility = Visibility.Visible;                
                 chk.Text = "✔";                
                 chk.Foreground = new SolidColorBrush(Colors.SeaGreen);
+                StatusText = "準備完了";
                 return true;
             }
             else
