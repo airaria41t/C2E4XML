@@ -42,6 +42,19 @@ namespace C2E4XML
             }
         }
 
+        // ★ ステータスバー横ボタンのツールチップ（仮）
+        private string _resultButtonToolTip = "";
+        public string ResultButtonToolTip
+        {
+            get => _resultButtonToolTip;
+            set
+            {
+                _resultButtonToolTip = value;
+                OnPropertyChanged(nameof(ResultButtonToolTip));
+            }
+        }
+
+
         // ★ ステータスバー横ボタンの動作
         public ICommand? ResultActionCommand { get; private set; }
 
@@ -89,6 +102,7 @@ namespace C2E4XML
             txtResultMarkB.Text = "";
             txtResult.Text = "";
             prgConvert.Visibility = Visibility.Hidden;
+            btnExplorer.Visibility = Visibility.Hidden;
         }
 
         private void InitializeProgressBar(bool flag)
@@ -97,6 +111,7 @@ namespace C2E4XML
             {
                 prgConvert.Visibility = Visibility.Visible;
                 ProgressValue = 0;
+                btnExplorer.Visibility = Visibility.Hidden;
             }
             else
             {
@@ -216,7 +231,7 @@ namespace C2E4XML
                             {
                                 // ★ 成功時：ステータスバーに表示
                                 LastResultMessage = excelPath;
-                                ResultButtonIcon = "?"; // 仮アイコン
+                                //ResultButtonIcon = "?"; // 仮アイコン
 
                                 // ★ 成功時：コピー可能
                                 //CopyResultCommand = new RelayCommand(() =>
@@ -247,7 +262,7 @@ namespace C2E4XML
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     LastResultMessage = log;
-                    ResultButtonIcon = "!"; // 仮アイコン
+                    //ResultButtonIcon = "!"; // 仮アイコン
 
                     // ★ 失敗時：コピー不可
                     //CopyResultCommand = null;
@@ -255,7 +270,7 @@ namespace C2E4XML
                     ResultActionCommand = new RelayCommand(() =>
                     {
                         MessageBox.Show(log, "キャンセル",
-                            MessageBoxButton.OK, MessageBoxImage.Error);
+                            MessageBoxButton.OK, MessageBoxImage.Exclamation);
                     });
                 });
                 MessageBox.Show(log, "キャンセル", MessageBoxButton.OK, MessageBoxImage.Exclamation);
@@ -265,17 +280,17 @@ namespace C2E4XML
 
             catch (IOException ex) when (((int)ex.HResult & 0xFFFF) == 0x20)
             {
-                string log = "Excel ファイルが開いているため、上書きできません。閉じてから再実行してください。";
+                string log = "Excel ファイルが開いているため、上書きできません。\n閉じてから再実行してください。";
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    LastResultMessage = log;
-                    ResultButtonIcon = "!";
+                    LastResultMessage = log.Replace("\n", "");
+                    //ResultButtonIcon = "!";
                     //CopyResultCommand = null;
 
                     ResultActionCommand = new RelayCommand(() =>
                     {
-                        MessageBox.Show(log, "変換失敗",
-                            MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show(log, "エラー",
+                            MessageBoxButton.OK, MessageBoxImage.Exclamation);
                     });
                 });
                 MessageBox.Show(log, "エラー", MessageBoxButton.OK, MessageBoxImage.Exclamation);
@@ -286,12 +301,12 @@ namespace C2E4XML
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     LastResultMessage = ex.Message;
-                    ResultButtonIcon = "!";
+                    //ResultButtonIcon = "!";
                     //CopyResultCommand = null;
 
                     ResultActionCommand = new RelayCommand(() =>
                     {
-                        MessageBox.Show(ex.Message, "変換失敗",
+                        MessageBox.Show(ex.Message, "エラー",
                             MessageBoxButton.OK, MessageBoxImage.Error);
                     });
                 });
@@ -328,7 +343,9 @@ namespace C2E4XML
                     txtResultMark.Foreground = new SolidColorBrush(Colors.SeaGreen);
                     txtResultMarkB.Text = "✔";
                     txtResultMarkB.Foreground = new SolidColorBrush(Colors.SeaGreen);
-                    txtResult.Text = LastResultMessage;
+                    //txtResult.Text = LastResultMessage;
+                    ResultButtonIcon = "\uE8A1"; // アイコンを反映
+                    ResultButtonToolTip = "Excel起動";
                 }
                 else
                 {
@@ -338,7 +355,13 @@ namespace C2E4XML
                     txtResultMark.Foreground = new SolidColorBrush(Colors.Crimson);
                     txtResultMarkB.Text = "✖";
                     txtResultMarkB.Foreground = new SolidColorBrush(Colors.Crimson);
-                    txtResult.Text = LastResultMessage;
+                    //txtResult.Text = LastResultMessage;
+                    ResultButtonIcon = "\uE783"; // アイコンを反映
+                    ResultButtonToolTip = "メッセージ表示";
+                }
+                if (!string.IsNullOrEmpty(LastResultMessage))
+                {
+                    btnExplorer.Visibility = Visibility.Visible;
                 }
                 StartClearResultTimer(TimeSpan.FromSeconds(3)); // 3秒後に消す
             }
@@ -517,6 +540,40 @@ namespace C2E4XML
         }
 
         #endregion
+
+        //private void CopyBorder_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        //{
+        //    if (!string.IsNullOrWhiteSpace(LastResultMessage))
+        //    {
+        //        Clipboard.SetText(LastResultMessage);
+        //    }
+        //}
+        private async void CopyBorder_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(LastResultMessage))
+                return;
+
+            // クリップボードへコピー
+            Clipboard.SetText(LastResultMessage);
+
+            // クリック視覚効果（Opacity を一瞬下げる）
+            var border = sender as Border;
+            border?.Opacity = 0.5;
+            await Task.Delay(120);
+            border?.Opacity = 1.0;
+
+            // 一時メッセージ表示
+            await ShowCopiedMessageAsync();
+        }
+
+        private async Task ShowCopiedMessageAsync()
+        {
+            string original = LastResultMessage;
+
+            txtResult.Text = "コピーしました";
+            await Task.Delay(1500); // 1.5秒表示
+            txtResult.Text = original;
+        }
 
     }
 }

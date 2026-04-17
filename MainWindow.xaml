@@ -130,24 +130,29 @@
                          BorderThickness="0"
                          Background="Transparent" 
                          IsReadOnly="True" IsHitTestVisible="False" />
-                <TextBox x:Name="txtResult" Text="{Binding LastResultMessage}"
+                <Border Background="Transparent"
+        MouseLeftButtonDown="CopyBorder_MouseLeftButtonDown"
+        Cursor="Hand">
+                    <TextBox x:Name="txtResult" Text="{Binding LastResultMessage}"
                          FontSize="10"
                          VerticalContentAlignment="Center" HorizontalContentAlignment="Right"
-                         Width="320" Height="25" Padding="0,4,0,0" 
+                         Width="320" Height="25" Padding="0,4,0,0"
+                         TextWrapping="NoWrap"
                          IsReadOnly="True" IsHitTestVisible="False" 
                          BorderThickness="0" 
                          Background="Transparent" 
                          HorizontalAlignment="Right" />
-
+                </Border>
+                
                 <!--エクスプローラ表示-->
-                <Button x:Name="btnExplorer" Content="&#xE8A1;" 
+                <Button x:Name="btnExplorer" Content="{Binding ResultButtonIcon}"
                         FontSize="13" FontFamily="{StaticResource SymbolThemeFontFamily}" 
                         VerticalContentAlignment="Top"
                         Cursor="Hand"
                         Style="{DynamicResource AccentButtonStyle}"
                         Width="40" Height="25" 
                         VerticalAlignment="Bottom" HorizontalAlignment="Right"
-                        ToolTip="Excel起動"
+                        ToolTip="{Binding ResultButtonToolTip}"
                         Click="BtnExplorer_Click"/>
             </StackPanel>
             <!--変換進捗バー-->
