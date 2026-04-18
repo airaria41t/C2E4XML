@@ -1,13 +1,7 @@
-﻿using DocumentFormat.OpenXml.Drawing.Charts;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 
@@ -17,13 +11,14 @@ namespace C2E4XML
     {
         private async Task<bool> ProcExecution()
         {
+            string? log = null;
+            string? title = null;
+            MessageBoxImage icon = MessageBoxImage.None;
+
             try
             {
                 // ファイルパス設定
                 string path = txtFilePath.Text;
-
-                // ProgressBar 初期化
-                //InitializeProgressBar(true);
 
                 // キャンセル用
                 _cts = new CancellationTokenSource();
@@ -39,9 +34,6 @@ namespace C2E4XML
                     await ConvertXmlToExcel(
                         path, bDetail, progress, status,
                         excelPath =>
-                        //await ConvertXmlToExcel(
-                        //    progress, status,
-                        //    excelPath =>
                         {
                             Application.Current.Dispatcher.Invoke(() =>
                             {
@@ -65,53 +57,81 @@ namespace C2E4XML
             }
             catch (OperationCanceledException ex)
             {
-                string log = string.IsNullOrEmpty(ex.Message) ? "キャンセルされました。" : ex.Message;
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    LastResultMessage = log;
+                //string log = string.IsNullOrEmpty(ex.Message) ? "キャンセルされました。" : ex.Message;
+                //Application.Current.Dispatcher.Invoke(() =>
+                //{
+                //    LastResultMessage = log;
 
-                    ResultActionCommand = new RelayCommand(() =>
-                    {
-                        MessageBox.Show(log, "キャンセル",
-                            MessageBoxButton.OK, MessageBoxImage.Exclamation);
-                    });
-                });
-                MessageBox.Show(log, "キャンセル", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-
+                //    ResultActionCommand = new RelayCommand(() =>
+                //    {
+                //        MessageBox.Show(log, "キャンセル",
+                //            MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                //    });
+                //});
+                //MessageBox.Show(log, "キャンセル", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                log = string.IsNullOrEmpty(ex.Message) ? "キャンセルされました。" : ex.Message;
+                title = "キャンセル";
+                icon = MessageBoxImage.Exclamation;
                 return false;
             }
 
             catch (IOException ex) when (((int)ex.HResult & 0xFFFF) == 0x20)
             {
-                string log = "Excel ファイルが開いているため、上書きできません。\n閉じてから再実行してください。";
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    LastResultMessage = log.Replace("\n", "");
+                //string log = "Excel ファイルが開いているため、上書きできません。\n閉じてから再実行してください。";
+                //Application.Current.Dispatcher.Invoke(() =>
+                //{
+                //    LastResultMessage = log.Replace("\n", "");
 
-                    ResultActionCommand = new RelayCommand(() =>
-                    {
-                        MessageBox.Show(log, "エラー",
-                            MessageBoxButton.OK, MessageBoxImage.Exclamation);
-                    });
-                });
-                MessageBox.Show(log, "エラー", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                //    ResultActionCommand = new RelayCommand(() =>
+                //    {
+                //        MessageBox.Show(log, "エラー",
+                //            MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                //    });
+                //});
+                //MessageBox.Show(log, "エラー", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                log = "Excel ファイルが開いているため、上書きできません。\n閉じてから再実行してください。";
+                title = "エラー";
+                icon = MessageBoxImage.Exclamation;
                 return false;
             }
             catch (Exception ex)
             {
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    LastResultMessage = ex.Message;
+                //Application.Current.Dispatcher.Invoke(() =>
+                //{
+                //    LastResultMessage = ex.Message;
 
-                    ResultActionCommand = new RelayCommand(() =>
-                    {
-                        MessageBox.Show(ex.Message, "エラー",
-                            MessageBoxButton.OK, MessageBoxImage.Error);
-                    });
-                });
+                //    ResultActionCommand = new RelayCommand(() =>
+                //    {
+                //        MessageBox.Show(ex.Message, "エラー",
+                //            MessageBoxButton.OK, MessageBoxImage.Error);
+                //    });
+                //});
 
-                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                //MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                log = ex.Message;
+                title = "エラー";
+                icon = MessageBoxImage.Error;
                 return false;
+            }
+            finally
+            {
+                if (log != null)
+                {
+                    //string capturedLog = log; // クロージャー対策
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        //LastResultMessage = capturedLog.Replace("\n", ""); // ステータスバーに表示
+                        LastResultMessage = log.Replace("\n", ""); // ステータスバーに表示
+                        ResultActionCommand = new RelayCommand(() =>
+                        {
+                            //MessageBox.Show(capturedLog, title, MessageBoxButton.OK, icon);
+                            MessageBox.Show(log, title, MessageBoxButton.OK, icon);
+                        });
+                    });
+                    MessageBox.Show(log, title, MessageBoxButton.OK, icon);
+                }
+                //// 終了後、5秒でステータスバーを初期状態に戻す
+                //StartClearResultTimer(TimeSpan.FromSeconds(5));
             }
         }
 
@@ -155,103 +175,11 @@ namespace C2E4XML
             return true;
         }
 
-        //private async Task ConvertXmlToExcel(string path, bool bDetail, IProgress<int> progress, IProgress<string> status, Action<string> onSuccess, CancellationToken token)
-        //{
-        //    token.ThrowIfCancellationRequested();
-        //    progress.Report(0);
-
-        //    //
-        //    // ① XML 読み込み
-        //    //
-        //    status.Report("XML 読み込み中...");
-        //    XmlLoader loader = new(path);
-        //    loader.LoadXml();
-        //    progress.Report(20);
-        //    token.ThrowIfCancellationRequested();
-
-        //    string excelPath;
-
-        //    //
-        //    // ② トグルチェックによる処理分岐（テーブル構築の有無）
-        //    //
-        //    if (!bDetail)
-        //    {
-        //        // 詳細出力オフの場合はテーブル構築をスキップして直接 Excel 出力
-
-        //        //
-        //        // ③ パス設定
-        //        //
-        //        status.Report("Excel 出力先パス設定中...");
-        //        excelPath = Path.ChangeExtension(path, ".xlsx");
-        //        progress.Report(40);
-        //        token.ThrowIfCancellationRequested();
-
-        //        //
-        //        // ④ ファイル既存チェック（上書き確認）
-        //        //
-        //        if (!ChkFileExists(excelPath))
-        //            throw new OperationCanceledException("同名ファイルが既にあります。"); // キャンセル扱い
-        //        progress.Report(50);
-        //        token.ThrowIfCancellationRequested();
-
-        //        //
-        //        // ⑤ Excel 出力
-        //        //
-        //        status.Report("Excel 出力中...");
-        //        _ = new ExcelExporter();
-        //        ExcelExporter.Export(excelPath, loader.ReadData);
-
-        //    }
-        //    else
-        //    {
-        //        // 詳細出力オンの場合はテーブル構築してから Excel 出力
-
-        //        //
-        //        // ③ テーブル構築
-        //        //
-        //        status.Report("テーブル構築中...");
-        //        XmlTableBuilder builder = new(loader.ReadData);
-        //        var tables = builder.Build();
-        //        progress.Report(30);
-        //        token.ThrowIfCancellationRequested();
-
-        //        //
-        //        // ④ パス設定
-        //        //
-        //        status.Report("Excel 出力先パス設定中...");
-        //        excelPath = Path.ChangeExtension(path, ".xlsx");
-        //        progress.Report(40);
-        //        token.ThrowIfCancellationRequested();
-
-        //        //
-        //        // ⑤ ファイル既存チェック（上書き確認）
-        //        //
-        //        if (!ChkFileExists(excelPath))
-        //            throw new OperationCanceledException("同名ファイルが既にあります。"); // キャンセル扱い
-        //        progress.Report(50);
-        //        token.ThrowIfCancellationRequested();
-
-        //        //
-        //        // ⑥ Excel 出力
-        //        //
-        //        status.Report("Excel 出力中...");
-        //        _ = new ExcelExporter();
-        //        ExcelExporter.Export(excelPath, tables);
-
-        //    }
-
-        //    progress.Report(100);
-        //    status.Report("完了");
-
-        //    //  成功時だけパスを外に返す
-        //    onSuccess(excelPath);
-        //}
-
         private async Task ConvertXmlToExcel(string path, bool bDetail, IProgress<int> progress, IProgress<string> status, Action<string> onSuccess, CancellationToken token)
         {
             StatusData sd = new();
             XmlLoader? loader = null;
-            Dictionary<string, List<Dictionary<string, string>>> ? excelSource = null;
+            Dictionary<string, List<Dictionary<string, string>>>? excelSource = null;
             string? excelPath = null;
             for (int i = 0; i <= sd.MaxIndex; i++)
             {
@@ -264,8 +192,6 @@ namespace C2E4XML
                     case 1: // XML 読み込み
                         loader = new XmlLoader(path);
                         loader.LoadXml();
-                        //if (!bDetail)
-                        //    excelSource = loader.ReadData;
                         break;
 
                     case 2: // パス設定
@@ -289,102 +215,18 @@ namespace C2E4XML
                         if (bDetail)
                         {
                             ExcelExporter.Export(excelPath!, excelSource!);
-                        } else {
+                        }
+                        else
+                        {
                             ExcelExporter.Export(excelPath!, loader!.ReadData);
                         }
-                        
+
                         break;
 
                     case 6: // 完了（処理なし）
                         break;
                 }
             }
-            //token.ThrowIfCancellationRequested();
-            //progress.Report(0);
-
-            ////
-            //// ① XML 読み込み
-            ////
-            //status.Report("XML 読み込み中...");
-            //XmlLoader loader = new(path);
-            //loader.LoadXml();
-            //progress.Report(20);
-            //token.ThrowIfCancellationRequested();
-
-            //string excelPath;
-
-            ////
-            //// ② トグルチェックによる処理分岐（テーブル構築の有無）
-            ////
-            //if (!bDetail)
-            //{
-            //    // 詳細出力オフの場合はテーブル構築をスキップして直接 Excel 出力
-
-            //    //
-            //    // ③ パス設定
-            //    //
-            //    status.Report("Excel 出力先パス設定中...");
-            //    excelPath = Path.ChangeExtension(path, ".xlsx");
-            //    progress.Report(40);
-            //    token.ThrowIfCancellationRequested();
-
-            //    //
-            //    // ④ ファイル既存チェック（上書き確認）
-            //    //
-            //    if (!ChkFileExists(excelPath))
-            //        throw new OperationCanceledException("同名ファイルが既にあります。"); // キャンセル扱い
-            //    progress.Report(50);
-            //    token.ThrowIfCancellationRequested();
-
-            //    //
-            //    // ⑤ Excel 出力
-            //    //
-            //    status.Report("Excel 出力中...");
-            //    _ = new ExcelExporter();
-            //    ExcelExporter.Export(excelPath, loader.ReadData);
-
-            //}
-            //else
-            //{
-            //    // 詳細出力オンの場合はテーブル構築してから Excel 出力
-
-            //    //
-            //    // ③ テーブル構築
-            //    //
-            //    status.Report("テーブル構築中...");
-            //    XmlTableBuilder builder = new(loader.ReadData);
-            //    var tables = builder.Build();
-            //    progress.Report(30);
-            //    token.ThrowIfCancellationRequested();
-
-            //    //
-            //    // ④ パス設定
-            //    //
-            //    status.Report("Excel 出力先パス設定中...");
-            //    excelPath = Path.ChangeExtension(path, ".xlsx");
-            //    progress.Report(40);
-            //    token.ThrowIfCancellationRequested();
-
-            //    //
-            //    // ⑤ ファイル既存チェック（上書き確認）
-            //    //
-            //    if (!ChkFileExists(excelPath))
-            //        throw new OperationCanceledException("同名ファイルが既にあります。"); // キャンセル扱い
-            //    progress.Report(50);
-            //    token.ThrowIfCancellationRequested();
-
-            //    //
-            //    // ⑥ Excel 出力
-            //    //
-            //    status.Report("Excel 出力中...");
-            //    _ = new ExcelExporter();
-            //    ExcelExporter.Export(excelPath, tables);
-
-            //}
-
-            //progress.Report(100);
-            //status.Report("完了");
-
             //  成功時だけパスを外に返す
             onSuccess(excelPath!);
         }
@@ -416,14 +258,16 @@ namespace C2E4XML
             else if (!File.Exists(path))
             {
                 checker = false;
-            } else {
+            }
+            else
+            {
                 checker = true;
             }
 
             if (checker)
             {
-                chk.Visibility = Visibility.Visible;                
-                chk.Text = "✔";                
+                chk.Visibility = Visibility.Visible;
+                chk.Text = "✔";
                 chk.Foreground = new SolidColorBrush(Colors.SeaGreen);
                 StatusText = "準備完了";
                 return true;
