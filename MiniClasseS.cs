@@ -34,13 +34,55 @@ namespace C2E4XML
             bool isSuccess = value is bool b && b;
 
             return isSuccess
-                ? Brushes.SeaGreen
-                : Brushes.Crimson;
+                ? Brushes.SeaGreen : Brushes.Crimson;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
             => throw new NotImplementedException();
     }
+
+    public class BoolToMarkConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            bool isSuccess = value is bool b && b;
+
+            return isSuccess ? "✔" : "✖";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
+
+    public class BoolToIconConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            bool isSuccess = value is bool b && b;
+
+            // 成功 → フォルダアイコン（E8A1）
+            // 失敗 → 警告アイコン（E783）
+            return isSuccess ? "\uE8A1" : "\uE783";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
+
+    public class BoolToToolTipConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            bool isSuccess = value is bool b && b;
+
+            return isSuccess
+                ? "Excel起動" : "メッセージ表示";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
+
 
     public class RelayCommand(Action execute, Func<bool>? canExecute = null) : ICommand
     {
@@ -80,4 +122,5 @@ namespace C2E4XML
         public void RaiseCanExecuteChanged()
             => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
+
 }

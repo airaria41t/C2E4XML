@@ -10,6 +10,9 @@
         ResizeMode="CanMinimize" WindowStyle="SingleBorderWindow" Loaded="MainWindow_Loaded">
     <Window.Resources>
         <local:BoolToColorConverter x:Key="BoolToColorConverter"/>
+        <local:BoolToMarkConverter  x:Key="BoolToMarkConverter"/>
+        <local:BoolToIconConverter  x:Key="BoolToIconConverter"/>
+        <local:BoolToToolTipConverter x:Key="BoolToToolTipConverter"/>
     </Window.Resources>
 
     <Grid>
@@ -32,16 +35,18 @@
             <StackPanel Orientation="Horizontal"
                         Height="30"
                         VerticalAlignment="Top" HorizontalAlignment="Left">
-                <TextBox Text="ファイルパス" FontSize="15"
-                     Width="90" BorderThickness="0" Background="Transparent" 
-                     VerticalAlignment="Top" HorizontalAlignment="Left"
-                     IsReadOnly="True" IsHitTestVisible="False" IsTabStop="False" />
                 <TextBox x:Name="txtCheck" Text="✔" FontSize="15"
-                     HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
-                     Width="20" Height="20" Margin="0" Padding="0"
-                     VerticalAlignment="Bottom" HorizontalAlignment="Left"
-                     BorderThickness="0" Background="Transparent" Foreground="SeaGreen"
-                     IsReadOnly="True" IsHitTestVisible="False" />
+                         HorizontalContentAlignment="Right" VerticalContentAlignment="Center"
+                         Width="20" Height="20" Margin="0" Padding="0"
+                         VerticalAlignment="Bottom" HorizontalAlignment="Left"
+                         BorderThickness="0" Background="Transparent" Foreground="SeaGreen"
+                         IsReadOnly="True" IsHitTestVisible="False" />
+                <TextBox Text="ファイルパス" FontSize="15"
+                         HorizontalContentAlignment="Left"
+                         Width="90" Padding="0,5"
+                         BorderThickness="0" Background="Transparent" 
+                         VerticalAlignment="Top" HorizontalAlignment="Left"
+                         IsReadOnly="True" IsHitTestVisible="False" IsTabStop="False" />
             </StackPanel>
             <StackPanel Orientation="Horizontal"
                         Height="40"
@@ -55,7 +60,8 @@
                          IsTabStop="False"
                          PreviewDragOver="TxtFilePath_PreviewDragOver" 
                          PreviewDrop="TxtFilePath_PreviewDrop"
-                         TextChanged="TxtFilePath_TextChanged" />
+                         TextChanged="TxtFilePath_TextChanged"
+                         PreviewMouseLeftButtonDown="TxtFilePath_PreviewMouseLeftButtonDown" />
                 <!--オープンファイルダイアログ表示-->
                 <Button x:Name="btnFilePath" Content="&#xE8A5;" FontSize="18"
                         FontFamily="{StaticResource SymbolThemeFontFamily}"
@@ -132,13 +138,14 @@
                     VerticalAlignment="Bottom" 
                     Visibility="Visible" Background="{DynamicResource ControlFillColorDefaultBrush}">
             <StackPanel Orientation="Horizontal" Height="25" >
-                <TextBox x:Name="txtResultMark" Text="{Binding LastResultMark}" 
+                <TextBox x:Name="txtResultMark" 
+                         Text="{Binding IsSuccess, Converter={StaticResource BoolToMarkConverter}}" 
                          FontSize="12"
                          HorizontalContentAlignment="Right" VerticalContentAlignment="Center"
                          Width="20" Height="25" Padding="0"
                          BorderThickness="0" 
                          Background="Transparent" 
-                         Foreground="{Binding LastResultMarkColor}"
+                         Foreground="{Binding IsSuccess, Converter={StaticResource BoolToColorConverter}}"
                          IsReadOnly="True" IsHitTestVisible="False" IsTabStop="False"/>
                 <TextBox x:Name="txtStatus" Text="{Binding StatusText}"
                          FontSize="10"
@@ -162,7 +169,8 @@
                 </Border>
                 
                 <!--エクスプローラ表示-->
-                <Button x:Name="btnExplorer" Content="{Binding ResultButtonIcon}"
+                <Button x:Name="btnExplorer"
+                        Content="{Binding IsSuccess, Converter={StaticResource BoolToIconConverter}}"
                         FontSize="13" FontFamily="{StaticResource SymbolThemeFontFamily}" 
                         VerticalContentAlignment="Top"
                         Cursor="Hand"
@@ -170,14 +178,15 @@
                         Width="40" Height="25" 
                         VerticalAlignment="Bottom" HorizontalAlignment="Right"
                         IsTabStop="False"
-                        ToolTip="{Binding ResultButtonToolTip}"
-                        Click="BtnExplorer_Click"/>
+                        ToolTip="{Binding IsSuccess, Converter={StaticResource BoolToToolTipConverter}}"
+                        Click="BtnExplorer_Click" 
+                        MouseRightButtonUp="BtnExplorer_MouseRightButtonUp"/>
             </StackPanel>
             <!--変換進捗バー-->
             <ProgressBar x:Name="prgConvert" 
                          Height="5" 
                          VerticalAlignment="Bottom"
-                         Minimum="0" Maximum="100" Value="{Binding ProgressValue}"/>
+                         Minimum="0" Maximum="6" Value="{Binding ProgressValue}"/>
         </StackPanel>
     </Grid>
 </Window>
