@@ -35,11 +35,15 @@
             <StackPanel Orientation="Horizontal"
                         Height="30"
                         VerticalAlignment="Top" HorizontalAlignment="Left">
-                <TextBox x:Name="txtCheck" Text="✔" FontSize="15"
+                <TextBox x:Name="txtCheck" 
+                         Text="{Binding IsPathCheck, Converter={StaticResource BoolToMarkConverter}}" 
+                         FontSize="15"
                          HorizontalContentAlignment="Right" VerticalContentAlignment="Center"
                          Width="20" Height="20" Margin="0" Padding="0"
                          VerticalAlignment="Bottom" HorizontalAlignment="Left"
-                         BorderThickness="0" Background="Transparent" Foreground="SeaGreen"
+                         BorderThickness="0"
+                         Background="Transparent"
+                         Foreground="{Binding IsPathCheck, Converter={StaticResource BoolToColorConverter}}"
                          IsReadOnly="True" IsHitTestVisible="False" />
                 <TextBox Text="ファイルパス" FontSize="15"
                          HorizontalContentAlignment="Left"

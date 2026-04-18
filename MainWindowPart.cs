@@ -57,38 +57,13 @@ namespace C2E4XML
             }
             catch (OperationCanceledException ex)
             {
-                //string log = string.IsNullOrEmpty(ex.Message) ? "キャンセルされました。" : ex.Message;
-                //Application.Current.Dispatcher.Invoke(() =>
-                //{
-                //    LastResultMessage = log;
-
-                //    ResultActionCommand = new RelayCommand(() =>
-                //    {
-                //        MessageBox.Show(log, "キャンセル",
-                //            MessageBoxButton.OK, MessageBoxImage.Exclamation);
-                //    });
-                //});
-                //MessageBox.Show(log, "キャンセル", MessageBoxButton.OK, MessageBoxImage.Exclamation);
                 log = string.IsNullOrEmpty(ex.Message) ? "キャンセルされました。" : ex.Message;
                 title = "キャンセル";
                 icon = MessageBoxImage.Exclamation;
                 return false;
             }
-
             catch (IOException ex) when (((int)ex.HResult & 0xFFFF) == 0x20)
             {
-                //string log = "Excel ファイルが開いているため、上書きできません。\n閉じてから再実行してください。";
-                //Application.Current.Dispatcher.Invoke(() =>
-                //{
-                //    LastResultMessage = log.Replace("\n", "");
-
-                //    ResultActionCommand = new RelayCommand(() =>
-                //    {
-                //        MessageBox.Show(log, "エラー",
-                //            MessageBoxButton.OK, MessageBoxImage.Exclamation);
-                //    });
-                //});
-                //MessageBox.Show(log, "エラー", MessageBoxButton.OK, MessageBoxImage.Exclamation);
                 log = "Excel ファイルが開いているため、上書きできません。\n閉じてから再実行してください。";
                 title = "エラー";
                 icon = MessageBoxImage.Exclamation;
@@ -96,18 +71,6 @@ namespace C2E4XML
             }
             catch (Exception ex)
             {
-                //Application.Current.Dispatcher.Invoke(() =>
-                //{
-                //    LastResultMessage = ex.Message;
-
-                //    ResultActionCommand = new RelayCommand(() =>
-                //    {
-                //        MessageBox.Show(ex.Message, "エラー",
-                //            MessageBoxButton.OK, MessageBoxImage.Error);
-                //    });
-                //});
-
-                //MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
                 log = ex.Message;
                 title = "エラー";
                 icon = MessageBoxImage.Error;
@@ -117,21 +80,16 @@ namespace C2E4XML
             {
                 if (log != null)
                 {
-                    //string capturedLog = log; // クロージャー対策
                     Application.Current.Dispatcher.Invoke(() =>
                     {
-                        //LastResultMessage = capturedLog.Replace("\n", ""); // ステータスバーに表示
                         LastResultMessage = log.Replace("\n", ""); // ステータスバーに表示
                         ResultActionCommand = new RelayCommand(() =>
                         {
-                            //MessageBox.Show(capturedLog, title, MessageBoxButton.OK, icon);
                             MessageBox.Show(log, title, MessageBoxButton.OK, icon);
                         });
                     });
                     MessageBox.Show(log, title, MessageBoxButton.OK, icon);
                 }
-                //// 終了後、5秒でステータスバーを初期状態に戻す
-                //StartClearResultTimer(TimeSpan.FromSeconds(5));
             }
         }
 
@@ -244,7 +202,7 @@ namespace C2E4XML
         private bool PathChecker(string path, bool flag = true)
         {
             var chk = txtCheck;
-            bool checker;
+            //bool checker;
             if (string.IsNullOrEmpty(path))
             {
                 if (flag)
@@ -253,30 +211,35 @@ namespace C2E4XML
                     StatusText = "ファイルパスを入力";
                     return true;
                 }
-                checker = false;
+                //checker = false;
+                IsPathCheck = false;
             }
             else if (!File.Exists(path))
             {
-                checker = false;
+                //checker = false;
+                IsPathCheck = false;
             }
             else
             {
-                checker = true;
+                //checker = true;
+                IsPathCheck = true;
             }
 
-            if (checker)
+            chk.Visibility = Visibility.Visible;
+
+            if (IsPathCheck)
             {
-                chk.Visibility = Visibility.Visible;
-                chk.Text = "✔";
-                chk.Foreground = new SolidColorBrush(Colors.SeaGreen);
+                //chk.Visibility = Visibility.Visible;
+                //chk.Text = "✔";
+                //chk.Foreground = new SolidColorBrush(Colors.SeaGreen);
                 StatusText = "準備完了";
                 return true;
             }
             else
             {
-                chk.Visibility = Visibility.Visible;
-                chk.Text = "✖";
-                chk.Foreground = new SolidColorBrush(Colors.Crimson);
+                //chk.Visibility = Visibility.Visible;
+                //chk.Text = "✖";
+                //chk.Foreground = new SolidColorBrush(Colors.Crimson);
                 return false;
             }
         }

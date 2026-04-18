@@ -78,7 +78,6 @@ namespace C2E4XML
                 foreach (XmlAttribute attr in node.Attributes)
                 {
                     rslt.Attributes[attr.Name] = attr.Value;
-                    //rslt.Children.Add(new XmlDataNode { Name = $"@{attr.Name}", Value = attr.Value });
                 }
             }
 

@@ -17,6 +17,17 @@ namespace C2E4XML
         private bool _isProcessing = false;
         private CancellationTokenSource? _cts;
 
+        private bool _isPathCheck;
+        public bool IsPathCheck
+        {
+            get => _isPathCheck;
+            set
+            {
+                _isPathCheck = value;
+                OnPropertyChanged(nameof(IsPathCheck));
+            }
+        }
+
         private bool _isSuccess;
         public bool IsSuccess
         {
@@ -216,16 +227,7 @@ namespace C2E4XML
 
                 IsSuccess = await ProcExecution();
 
-                if (IsSuccess)
-                {
-                    // 成功時の処理（必要に応じて追加）
-                    StatusText = "変換成功";
-                }
-                else
-                {
-                    // 失敗時の処理（必要に応じて追加）
-                    StatusText = "変換失敗";
-                }
+                StatusText = IsSuccess ? "変換成功" : "変換失敗";
                 if (!string.IsNullOrEmpty(LastResultMessage))
                 {
                     btnExplorer.Visibility = Visibility.Visible;
