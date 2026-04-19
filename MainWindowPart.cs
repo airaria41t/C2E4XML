@@ -28,16 +28,13 @@ namespace C2E4XML
 
                 bool bDetail = tglDetailOut.IsChecked == true;
 
-                await Task.Run(async () =>
-                {
-                    await ConvertXmlToExcel(
-                        path, bDetail, progress, status,
+                await Task.Run(() =>
+                    ConvertXmlToExcel(path, bDetail, progress, status,
                         excelPath =>
                         {
                             Application.Current.Dispatcher.Invoke(() =>
                             {
-                                LastResultMessage = excelPath;// 成功時：ステータスバーに表示
-                                // 成功時：ファイル実行
+                                LastResultMessage = excelPath;
                                 ResultActionCommand = new RelayCommand(() =>
                                 {
                                     Process.Start(new ProcessStartInfo(excelPath)
@@ -45,10 +42,30 @@ namespace C2E4XML
                                         UseShellExecute = true
                                     });
                                 });
-
                             });
-                        }, token);
-                });
+                        }, token)
+                );
+                //await Task.Run(async () =>
+                //{
+                //    await ConvertXmlToExcel(
+                //        path, bDetail, progress, status,
+                //        excelPath =>
+                //        {
+                //            Application.Current.Dispatcher.Invoke(() =>
+                //            {
+                //                LastResultMessage = excelPath;// 成功時：ステータスバーに表示
+                //                // 成功時：ファイル実行
+                //                ResultActionCommand = new RelayCommand(() =>
+                //                {
+                //                    Process.Start(new ProcessStartInfo(excelPath)
+                //                    {
+                //                        UseShellExecute = true
+                //                    });
+                //                });
+
+                //            });
+                //        }, token);
+                //});
 
                 MessageBox.Show("Excel 出力が完了しました。", "完了", MessageBoxButton.OK, MessageBoxImage.Information);
 
@@ -94,10 +111,7 @@ namespace C2E4XML
 
         private void StartClearResultTimer(TimeSpan delay)
         {
-            var timer = new DispatcherTimer
-            {
-                Interval = delay
-            };
+            var timer = new DispatcherTimer{Interval = delay};
 
             timer.Tick += (s, e) =>
             {
@@ -124,20 +138,104 @@ namespace C2E4XML
                     );
                     overwrite = (result == MessageBoxResult.Yes);
                 });
-                if (!overwrite)
-                {
-                    return false; // キャンセル扱い
-                }
+                if (!overwrite) return false; // キャンセル扱い
             }
             return true;
         }
 
-        private async Task ConvertXmlToExcel(string path, bool bDetail, IProgress<int> progress, IProgress<string> status, Action<string> onSuccess, CancellationToken token)
+        private async Task ConvertXmlToExcel(
+            string path, 
+            bool bDetail, 
+            IProgress<int> progress, 
+            IProgress<string> status, 
+            Action<string> onSuccess, 
+            CancellationToken token)
         {
             StatusData sd = new();
             XmlLoader? loader = null;
             Dictionary<string, List<Dictionary<string, string>>>? excelSource = null;
             string? excelPath = null;
+            //for (int i = 0; i <= sd.MaxIndex; i++)
+            //{
+            //    status.Report(sd[i]);
+            //    progress.Report(i);
+            //    token.ThrowIfCancellationRequested();
+
+            //    switch (i)
+            //    {
+            //        case 1: // XML 読み込み
+            //            loader = new XmlLoader(path);
+            //            loader.LoadXml();
+            //            break;
+
+            //        case 2: // パス設定
+            //            excelPath = Path.ChangeExtension(path, ".xlsx");
+            //            break;
+
+            //        case 3: // ファイルチェック
+            //            if (!ChkFileExists(excelPath!))
+            //                throw new OperationCanceledException("同名ファイルが既にあります。");
+            //            break;
+
+            //        case 4: // テーブル構築（bDetail のときだけ）
+            //            if (bDetail)
+            //            {
+            //                XmlTableBuilder? builder = new(loader!.ReadData);
+            //                excelSource = builder.Build();
+            //            }
+            //            break;
+
+            //        case 5: // Excel 出力
+            //            if (bDetail)
+            //            {
+            //                ExcelExporter.Export(excelPath!, excelSource!);
+            //            } else {
+            //                ExcelExporter.Export(excelPath!, loader!.ReadData);
+            //            }
+
+            //            break;
+
+            //        case 6: // 完了（処理なし）
+            //            break;
+            //    }
+            //}
+
+            // ▼▼▼ ローカル関数（構造はそのまま） ▼▼▼
+
+            void StepLoadXml()
+            {
+                loader = new XmlLoader(path);
+                loader.LoadXml();
+            }
+
+            void StepSetExcelPath()
+            {
+                excelPath = Path.ChangeExtension(path, ".xlsx");
+            }
+
+            void StepCheckExists()
+            {
+                if (!ChkFileExists(excelPath!))
+                    throw new OperationCanceledException("同名ファイルが既にあります。");
+            }
+
+            void StepBuildTable()
+            {
+                if (!bDetail) return;
+                XmlTableBuilder builder = new(loader!.ReadData);
+                excelSource = builder.Build();
+            }
+
+            void StepExportExcel()
+            {
+                if (bDetail)
+                    ExcelExporter.Export(excelPath!, excelSource!);
+                else
+                    ExcelExporter.Export(excelPath!, loader!.ReadData);
+            }
+
+            // ▲▲▲ ローカル関数ここまで ▲▲▲
+
             for (int i = 0; i <= sd.MaxIndex; i++)
             {
                 status.Report(sd[i]);
@@ -146,44 +244,14 @@ namespace C2E4XML
 
                 switch (i)
                 {
-                    case 1: // XML 読み込み
-                        loader = new XmlLoader(path);
-                        loader.LoadXml();
-                        break;
-
-                    case 2: // パス設定
-                        excelPath = Path.ChangeExtension(path, ".xlsx");
-                        break;
-
-                    case 3: // ファイルチェック
-                        if (!ChkFileExists(excelPath!))
-                            throw new OperationCanceledException("同名ファイルが既にあります。");
-                        break;
-
-                    case 4: // テーブル構築（bDetail のときだけ）
-                        if (bDetail)
-                        {
-                            XmlTableBuilder? builder = new(loader!.ReadData);
-                            excelSource = builder.Build();
-                        }
-                        break;
-
-                    case 5: // Excel 出力
-                        if (bDetail)
-                        {
-                            ExcelExporter.Export(excelPath!, excelSource!);
-                        }
-                        else
-                        {
-                            ExcelExporter.Export(excelPath!, loader!.ReadData);
-                        }
-
-                        break;
-
-                    case 6: // 完了（処理なし）
-                        break;
+                    case 1: StepLoadXml(); break;
+                    case 2: StepSetExcelPath(); break;
+                    case 3: StepCheckExists(); break;
+                    case 4: StepBuildTable(); break;
+                    case 5: StepExportExcel(); break;
                 }
             }
+
             //  成功時だけパスを外に返す
             onSuccess(excelPath!);
         }
@@ -209,9 +277,7 @@ namespace C2E4XML
                     return true;
                 }
                 IsPathCheck = false;
-            }
-            else
-            {
+            } else {
                 IsPathCheck = File.Exists(path);
             }
 

@@ -13,6 +13,7 @@ namespace C2E4XML
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
         #region フィールド
+
         private readonly Lock _procLock = new();
         private bool _isProcessing = false;
         private CancellationTokenSource? _cts;
@@ -21,72 +22,100 @@ namespace C2E4XML
         public bool IsPathCheck
         {
             get => _isPathCheck;
-            set
-            {
-                _isPathCheck = value;
-                OnPropertyChanged(nameof(IsPathCheck));
-            }
+            set { _isPathCheck = value; OnPropertyChanged(); }
         }
+        //public bool IsPathCheck
+        //{
+        //    get => _isPathCheck;
+        //    set
+        //    {
+        //        _isPathCheck = value;
+        //        OnPropertyChanged(nameof(IsPathCheck));
+        //    }
+        //}
 
         private bool _isSuccess;
         public bool IsSuccess
         {
             get => _isSuccess;
-            set
-            {
-                _isSuccess = value;
-                OnPropertyChanged(nameof(IsSuccess));
-            }
+            set { _isSuccess = value; OnPropertyChanged(); }
         }
+        //public bool IsSuccess
+        //{
+        //    get => _isSuccess;
+        //    set
+        //    {
+        //        _isSuccess = value;
+        //        OnPropertyChanged(nameof(IsSuccess));
+        //    }
+        //}
 
         private double _progressValue;
         public double ProgressValue
         {
             get => _progressValue;
-            set
-            {
-                _progressValue = value;
-                OnPropertyChanged(nameof(ProgressValue));
-            }
+            set { _progressValue = value; OnPropertyChanged(); }
         }
+        //public double ProgressValue
+        //{
+        //    get => _progressValue;
+        //    set
+        //    {
+        //        _progressValue = value;
+        //        OnPropertyChanged(nameof(ProgressValue));
+        //    }
+        //}
 
         private string _statusText = "";
         public string StatusText
         {
             get => _statusText;
-            set
-            {
-                _statusText = value;
-                OnPropertyChanged(nameof(StatusText));
-            }
+            set { _statusText = value; OnPropertyChanged(); }
         }
+        //public string StatusText
+        //{
+        //    get => _statusText;
+        //    set
+        //    {
+        //        _statusText = value;
+        //        OnPropertyChanged(nameof(StatusText));
+        //    }
+        //}
 
         // ステータスバー表示用（成功パス／失敗メッセージ）
         private string _lastResultMessage = "";
         public string LastResultMessage
         {
             get => _lastResultMessage;
-            set
-            {
-                _lastResultMessage = value;
-                OnPropertyChanged(nameof(LastResultMessage));
-            }
+            set { _lastResultMessage = value; OnPropertyChanged(); }
         }
+        //public string LastResultMessage
+        //{
+        //    get => _lastResultMessage;
+        //    set
+        //    {
+        //        _lastResultMessage = value;
+        //        OnPropertyChanged(nameof(LastResultMessage));
+        //    }
+        //}
 
         // ステータスバー横ボタンの動作
         public ICommand? ResultActionCommand { get; private set; }
 
         public event PropertyChangedEventHandler? PropertyChanged;
-        private void OnPropertyChanged(string propertyName)
-            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        //private void OnPropertyChanged(string propertyName)
+        //    => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        private void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string? name = null)
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+
         #endregion
 
         #region コンストラクタ・初期化
+
         public MainWindow()
         {
             InitializeComponent();
             Loaded += MainWindow_Loaded;
-
             DataContext = this;
         }
 
@@ -122,9 +151,11 @@ namespace C2E4XML
             PathChecker(txtFilePath.Text);
             txtResultMark.Text = "";
         }
+
         #endregion
 
         #region イベント
+
         /// <summary>
         /// オープンファイルダイアログ表示
         /// 変換ファイルパス取得
@@ -152,13 +183,14 @@ namespace C2E4XML
         /// <param name="e"></param>
         private void TxtFilePath_PreviewDragOver(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
-            {
-                e.Effects = DragDropEffects.Copy;
-            } else {
-                e.Effects = DragDropEffects.None;
-            }
-
+            //if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            //{
+            //    e.Effects = DragDropEffects.Copy;
+            //} else {
+            //    e.Effects = DragDropEffects.None;
+            //}
+            e.Effects = e.Data.GetDataPresent(DataFormats.FileDrop)
+                ? DragDropEffects.Copy : DragDropEffects.None;
             e.Handled = true;
         }
 
@@ -178,22 +210,19 @@ namespace C2E4XML
                 if (e.Data.GetData(DataFormats.FileDrop) is not string[] files || files.Length == 0)
                     return;
 
-                string path = files[0];
+                if (sender is TextBox tb)
+                    tb.Text = files[0];
+                //string path = files[0];
 
-                if (sender is not TextBox tb)
-                    return;
+                //if (sender is not TextBox tb)
+                //    return;
 
-                tb.Text = path;
+                //tb.Text = path;
             }
             catch (Exception ex)
             {
                 // Drop 内で例外が外に出ると DragOver が壊れるためここで止める
-                MessageBox.Show(
-                    ex.Message,
-                    "Drop エラー",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error
-                );
+                MessageBox.Show(ex.Message, "Drop エラー", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -214,6 +243,7 @@ namespace C2E4XML
                     }
                     _isProcessing = true;
                 }
+
                 // ファイルパスの妥当性確認
                 if (!PathChecker(txtFilePath.Text, false))
                 {
