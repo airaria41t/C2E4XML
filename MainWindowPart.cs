@@ -201,47 +201,39 @@ namespace C2E4XML
 
         private bool PathChecker(string path, bool flag = true)
         {
-            var chk = txtCheck;
-            //bool checker;
-            if (string.IsNullOrEmpty(path))
+            //var chk = txtCheck;
+            if (string.IsNullOrEmpty(path) || txtFilePath.Text == "ファイルパスを入力")
             {
                 if (flag)
                 {
-                    chk.Visibility = Visibility.Hidden;
+                    txtCheck.Visibility = Visibility.Hidden;
                     StatusText = "ファイルパスを入力";
                     return true;
                 }
-                //checker = false;
                 IsPathCheck = false;
             }
-            else if (!File.Exists(path))
-            {
-                //checker = false;
-                IsPathCheck = false;
-            }
+            //else if (!File.Exists(path))
+            //{
+            //    IsPathCheck = false;
+            //}
             else
             {
-                //checker = true;
-                IsPathCheck = true;
+                //IsPathCheck = true;
+                IsPathCheck = File.Exists(path);
             }
 
-            chk.Visibility = Visibility.Visible;
+            txtCheck.Visibility = Visibility.Visible;
 
-            if (IsPathCheck)
-            {
-                //chk.Visibility = Visibility.Visible;
-                //chk.Text = "✔";
-                //chk.Foreground = new SolidColorBrush(Colors.SeaGreen);
-                StatusText = "準備完了";
-                return true;
-            }
-            else
-            {
-                //chk.Visibility = Visibility.Visible;
-                //chk.Text = "✖";
-                //chk.Foreground = new SolidColorBrush(Colors.Crimson);
-                return false;
-            }
+            //if (IsPathCheck)
+            //{
+            //    StatusText = "準備完了";
+            //    return true;
+            //} else {
+            //    return false;
+            //}
+            //if (IsPathCheck) StatusText = "準備完了";
+            StatusText = IsPathCheck ? "準備完了" : "ファイルが見つかりません";
+            return IsPathCheck;
         }
 
         public class StatusData

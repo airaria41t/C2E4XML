@@ -119,7 +119,8 @@ namespace C2E4XML
             {
                 prgConvert.Visibility = Visibility.Hidden;
             }
-            StatusText = "準備完了";
+            //StatusText = "準備完了";
+            PathChecker(txtFilePath.Text);
             txtResultMark.Text = "";
         }
         #endregion
