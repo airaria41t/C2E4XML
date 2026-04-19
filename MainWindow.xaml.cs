@@ -119,7 +119,6 @@ namespace C2E4XML
             {
                 prgConvert.Visibility = Visibility.Hidden;
             }
-            //StatusText = "準備完了";
             PathChecker(txtFilePath.Text);
             txtResultMark.Text = "";
         }
@@ -156,9 +155,7 @@ namespace C2E4XML
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
                 e.Effects = DragDropEffects.Copy;
-            }
-            else
-            {
+            } else {
                 e.Effects = DragDropEffects.None;
             }
 
@@ -278,17 +275,14 @@ namespace C2E4XML
             if (ResultActionCommand != null && ResultActionCommand.CanExecute(null))
             {
                 ResultActionCommand.Execute(null);
-            }
-            else if (!string.IsNullOrEmpty(LastResultMessage) && File.Exists(LastResultMessage))
+            } else if (!string.IsNullOrEmpty(LastResultMessage) && File.Exists(LastResultMessage))
             {
                 // 念のためパスとして直接実行もフォールバック
                 Process.Start(new ProcessStartInfo(LastResultMessage)
                 {
                     UseShellExecute = true
                 });
-            }
-            else
-            {
+            } else {
                 MessageBox.Show("実行可能なパスがありません。", "情報",
                     MessageBoxButton.OK, MessageBoxImage.Information);
             }

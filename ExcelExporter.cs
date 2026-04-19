@@ -111,7 +111,7 @@ namespace C2E4XML
 
         public static void Export(string filePath, XmlDataNode data)
         {
-            _ = new XmlFlattener();
+            //_ = new XmlFlattener();
             var rows = XmlFlattener.Flatten(data).ToList();
 
             using var workbook = new XLWorkbook();

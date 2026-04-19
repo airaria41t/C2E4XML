@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
-using System.Windows.Media;
 using System.Windows.Threading;
 
 namespace C2E4XML
@@ -201,7 +200,6 @@ namespace C2E4XML
 
         private bool PathChecker(string path, bool flag = true)
         {
-            //var chk = txtCheck;
             if (string.IsNullOrEmpty(path) || txtFilePath.Text == "ファイルパスを入力")
             {
                 if (flag)
@@ -212,26 +210,13 @@ namespace C2E4XML
                 }
                 IsPathCheck = false;
             }
-            //else if (!File.Exists(path))
-            //{
-            //    IsPathCheck = false;
-            //}
             else
             {
-                //IsPathCheck = true;
                 IsPathCheck = File.Exists(path);
             }
 
             txtCheck.Visibility = Visibility.Visible;
 
-            //if (IsPathCheck)
-            //{
-            //    StatusText = "準備完了";
-            //    return true;
-            //} else {
-            //    return false;
-            //}
-            //if (IsPathCheck) StatusText = "準備完了";
             StatusText = IsPathCheck ? "準備完了" : "ファイルが見つかりません";
             return IsPathCheck;
         }
