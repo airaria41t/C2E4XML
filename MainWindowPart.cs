@@ -45,27 +45,6 @@ namespace C2E4XML
                             });
                         }, token)
                 );
-                //await Task.Run(async () =>
-                //{
-                //    await ConvertXmlToExcel(
-                //        path, bDetail, progress, status,
-                //        excelPath =>
-                //        {
-                //            Application.Current.Dispatcher.Invoke(() =>
-                //            {
-                //                LastResultMessage = excelPath;// 成功時：ステータスバーに表示
-                //                // 成功時：ファイル実行
-                //                ResultActionCommand = new RelayCommand(() =>
-                //                {
-                //                    Process.Start(new ProcessStartInfo(excelPath)
-                //                    {
-                //                        UseShellExecute = true
-                //                    });
-                //                });
-
-                //            });
-                //        }, token);
-                //});
 
                 MessageBox.Show("Excel 出力が完了しました。", "完了", MessageBoxButton.OK, MessageBoxImage.Information);
 
@@ -236,7 +215,7 @@ namespace C2E4XML
 
             // ▲▲▲ ローカル関数ここまで ▲▲▲
 
-            for (int i = 0; i <= sd.MaxIndex; i++)
+            for (int i = 0; i <= StatusData.MaxIndex; i++)
             {
                 status.Report(sd[i]);
                 progress.Report(i);
@@ -289,7 +268,7 @@ namespace C2E4XML
 
         public class StatusData
         {
-            private readonly Dictionary<int, string> _data
+            private static readonly Dictionary<int, string> _data
                 = new()
                 {
                     [0] = (""),
@@ -302,7 +281,10 @@ namespace C2E4XML
                 };
 
             public string this[int index] => _data[index];
-            public int MaxIndex => _data.Count - 1;
+            public static string Get(int index) => _data[index];
+            public static int MaxIndex => _data.Count - 1;
+
+            //public static int Max() => MaxIndex;
         }
 
     }

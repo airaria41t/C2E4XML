@@ -121,8 +121,8 @@
 
             // ★★★ 修正版：属性 + 子複数 → 1 行表（customer を正しく処理する）★★★
             if (node.Attributes.Count > 0 &&
-    children.Count > 1 &&
-    children.All(c => c.Children.Count == 0))   // ★ 追加：子が葉ノードのときだけ
+                children.Count > 1 &&
+                children.All(c => c.Children.Count == 0))   // ★ 追加：子が葉ノードのときだけ
             {
                 string tablePath = path;
                 if (!_created.Contains(tablePath))

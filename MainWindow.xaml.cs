@@ -130,6 +130,7 @@ namespace C2E4XML
             StatusText = "ファイルパスを入力";
             txtResultMark.Text = "";
             LastResultMessage = "";
+            prgConvert.Maximum = StatusData.MaxIndex;
             prgConvert.Visibility = Visibility.Hidden;
             btnExplorer.Visibility = Visibility.Hidden;
             txtCheck.Visibility = Visibility.Hidden;
