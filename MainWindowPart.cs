@@ -134,50 +134,6 @@ namespace C2E4XML
             XmlLoader? loader = null;
             Dictionary<string, List<Dictionary<string, string>>>? excelSource = null;
             string? excelPath = null;
-            //for (int i = 0; i <= sd.MaxIndex; i++)
-            //{
-            //    status.Report(sd[i]);
-            //    progress.Report(i);
-            //    token.ThrowIfCancellationRequested();
-
-            //    switch (i)
-            //    {
-            //        case 1: // XML 読み込み
-            //            loader = new XmlLoader(path);
-            //            loader.LoadXml();
-            //            break;
-
-            //        case 2: // パス設定
-            //            excelPath = Path.ChangeExtension(path, ".xlsx");
-            //            break;
-
-            //        case 3: // ファイルチェック
-            //            if (!ChkFileExists(excelPath!))
-            //                throw new OperationCanceledException("同名ファイルが既にあります。");
-            //            break;
-
-            //        case 4: // テーブル構築（bDetail のときだけ）
-            //            if (bDetail)
-            //            {
-            //                XmlTableBuilder? builder = new(loader!.ReadData);
-            //                excelSource = builder.Build();
-            //            }
-            //            break;
-
-            //        case 5: // Excel 出力
-            //            if (bDetail)
-            //            {
-            //                ExcelExporter.Export(excelPath!, excelSource!);
-            //            } else {
-            //                ExcelExporter.Export(excelPath!, loader!.ReadData);
-            //            }
-
-            //            break;
-
-            //        case 6: // 完了（処理なし）
-            //            break;
-            //    }
-            //}
 
             // ▼▼▼ ローカル関数（構造はそのまま） ▼▼▼
 
