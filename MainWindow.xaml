@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:C2E4XML"
         mc:Ignorable="d"
-        Title="Convert" Icon="/とけちゃう猫さん.png"
+        Title="Convert" Icon="/ネオン輝く歯車魔法陣シジル.png"
         Height="225" Width="550" 
         ResizeMode="CanMinimize" WindowStyle="SingleBorderWindow" Loaded="MainWindow_Loaded">
     <Window.Resources>

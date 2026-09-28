@@ -90,7 +90,7 @@
                     g.Count() > 1 &&
                     g.Select(x => x.Name).Distinct().Count() > 1 &&
                     g.All(x => x.Children.Count > 0) &&
-                    // ★ 追加：entry の兄弟まとめが可能なら structureGroups を無効化
+                    // entry の兄弟まとめが可能なら structureGroups を無効化
                     !sameNameGroups.Any(sg => sg.Count() > 1)
                 )
                 .ToList();
@@ -119,10 +119,10 @@
                 return;
             }
 
-            // ★★★ 修正版：属性 + 子複数 → 1 行表（customer を正しく処理する）★★★
+            // 属性 + 子複数 → 1 行表（customer を正しく処理する）
             if (node.Attributes.Count > 0 &&
                 children.Count > 1 &&
-                children.All(c => c.Children.Count == 0))   // ★ 追加：子が葉ノードのときだけ
+                children.All(c => c.Children.Count == 0))   // 子が葉ノードのときだけ
             {
                 string tablePath = path;
                 if (!_created.Contains(tablePath))
@@ -147,7 +147,7 @@
                 return;
             }
 
-            // ★★★ 値だけを持つ単純要素（DeliveryNotes など）を 1 行表にする分岐 ★★★
+            // 値だけを持つ単純要素（DeliveryNotes など）を 1 行表にする分岐
             if (node.Attributes.Count == 0 &&
                 children.Count == 0 &&
                 !string.IsNullOrEmpty(node.Value))
@@ -172,13 +172,13 @@
             {
                 var only = children[0];
 
-                // ★ その子の直下に「同名の兄弟」が複数あるなら、
-                //    ここで 1 行表にせず、後続のロジック（兄弟まとめ）に任せる
+                // その子の直下に「同名の兄弟」が複数あるなら、
+                //  ここで 1 行表にせず、後続のロジック（兄弟まとめ）に任せる
                 bool onlyHasSameNameGrandChildren =
                     only.Children
                         .GroupBy(c => c.Name)
                         .Any(g => g.Count() > 1);
-                // ★★★ 既存判定が false のときだけ deeper を探索する ★★★
+                // 既存判定が false のときだけ deeper を探索する
                 if (!onlyHasSameNameGrandChildren)
                 {
                     if (HasSameNameDescendants(only))

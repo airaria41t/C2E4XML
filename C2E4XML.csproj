@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
-    <ApplicationIcon>とけちゃう猫さん.ico</ApplicationIcon>
+    <ApplicationIcon>ネオン輝く歯車魔法陣シジル.ico</ApplicationIcon>
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
   </PropertyGroup>
 
@@ -21,11 +21,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="とけちゃう猫さん.png" />
+    <None Remove="ネオン輝く歯車魔法陣シジル.png" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="とけちゃう猫さん.ico" />
+    <Content Include="ネオン輝く歯車魔法陣シジル.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -33,7 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="とけちゃう猫さん.png" />
+    <Resource Include="ネオン輝く歯車魔法陣シジル.png" />
   </ItemGroup>
 
 </Project>

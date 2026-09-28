@@ -135,7 +135,7 @@ namespace C2E4XML
             Dictionary<string, List<Dictionary<string, string>>>? excelSource = null;
             string? excelPath = null;
 
-            // ▼▼▼ ローカル関数（構造はそのまま） ▼▼▼
+            // ▼▼▼ ローカル関数 ▼▼▼
 
             void StepLoadXml()
             {

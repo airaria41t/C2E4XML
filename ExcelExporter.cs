@@ -8,7 +8,7 @@ namespace C2E4XML
         {
             using var workbook = new XLWorkbook();
 
-            // 1. シート名（ルート直下タグ）ごとにグルーピング
+            // シート名（ルート直下タグ）ごとにグルーピング
             var groups = tables.GroupBy(kv => GetSheetKey(kv.Key));
 
             foreach (var group in groups)
@@ -18,7 +18,7 @@ namespace C2E4XML
 
                 int currentRow = 1;
 
-                // 2. 同じシートに属する表を順に書き込む
+                // 同じシートに属する表を順に書き込む
                 foreach (var kv in group.OrderBy(g => g.Key))
                 {
                     string fullPath = kv.Key;
@@ -27,7 +27,7 @@ namespace C2E4XML
                     // 表タイトル行（フルパス）
                     sheet.Cell(currentRow, 1).Value = fullPath;
 
-                    // ★ 追加：表タイトル行の背景色（ヘッダーより濃いグレー）
+                    // 表タイトル行の背景色（ヘッダーより濃いグレー）
                     var titleRange = sheet.Range(currentRow, 1, currentRow, 1);
                     titleRange.Style.Fill.BackgroundColor = XLColor.Gray;   // ← 濃いグレー
 
@@ -41,7 +41,7 @@ namespace C2E4XML
                         for (int col = 0; col < header.Count; col++)
                             sheet.Cell(currentRow, col + 1).Value = header[col];
 
-                        // ★ 追加：ヘッダー行のスタイル（背景グレー＋太字）
+                        // ヘッダー行のスタイル（背景グレー＋太字）
                         var headerRange = sheet.Range(currentRow, 1, currentRow, header.Count);
                         headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
 
@@ -62,7 +62,7 @@ namespace C2E4XML
                             currentRow++;
                         }
 
-                        // ★ 追加：データ行を太字にする
+                        // データ行を太字にする
                         if (currentRow > dataStartRow)
                         {
                             var dataRange = sheet.Range(dataStartRow, 1, currentRow - 1, header.Count);
